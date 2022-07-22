@@ -4,11 +4,13 @@ import numpy as np
 from manim import *
 from solarized import *
 from functools import cmp_to_key
+import copy
 
 text_color = GRAY
 background_color = config.background_color
 under_shift = 0.3* DOWN
 over_shift = 0.3*UP
+default_sep = 0.4
 
 fair_strings = [
 "ABCBCACABCBAACBBAC",
@@ -33,11 +35,10 @@ class FairString:
             Tex(l, color = text_color)
             for l in self.str
         ]
-        self.n = len(self.letters)
         self.counters = []
         self.counter_titles = []
 
-    def write(self, scene, pos_ = None, sep_ = 0.4, center = True):
+    def write(self, scene, pos_ = None, sep_ = default_sep, center = True):
         if pos_ is None:
             pos_ = self.letters[0].get_center()        
         self.sep = sep_
@@ -49,7 +50,7 @@ class FairString:
                 l.move_to(self.letters[i-1].get_center() + self.sep * RIGHT)
         
         if center == True:
-            off = (self.letters[0].get_center() + self.letters[self.n - 1].get_center())/2
+            off = (self.letters[0].get_center() + self.letters[len(self.letters) - 1].get_center())/2
             for l in self.letters:
                 l.shift(off * LEFT)
 
@@ -60,8 +61,13 @@ class FairString:
             )
         )
 
-    def create_from(self):
-        pass
+    def create_from_list_of_letters(self, letters):
+        self.letters = letters
+        self.str = ""
+        for l in self.letters:
+            self.str += l.get_tex_string()
+        self.counters = []
+        self.counter_titles = []
 
     def find_pairs(self, scene, match_set, ranges = [None, None], highlight_color = None):
         underscore1 = Line(start = -0.1*RIGHT + under_shift, end = 0.1*RIGHT + under_shift, color = text_color)
@@ -232,16 +238,42 @@ class FairString:
         self.counters = []
         self.counter_titles = []
 
-    def reorganize_by_left_coordinate(self):
-        #change the order of letters based on their current position on the screen
-        self.letters.sort(key = cmp_to_key(lambda l1, l2: l1.get_center()[0] - l2.get_center()[0]))
+    def update_string(self):
         self.str = ""
         for l in self.letters:
             self.str += l.get_tex_string()
 
-class Construction(Scene):
+    def reorganize_by_left_coordinate(self):
+        #change the order of letters based on their current position on the screen
+        self.letters.sort(key = cmp_to_key(lambda l1, l2: l1.get_center()[0] - l2.get_center()[0]))
+        self.update_string()
+
+    def animated_permute(self, scene, perm_list):
+        anims = []
+        for l in self.letters:
+            for f, t in perm_list:
+                if l.get_tex_string().strip() == f:
+                    anims.append(Transform(l, Tex(t, color = text_color).move_to(l.get_center())))
+        scene.play(
+            *anims
+        )
+        self.update_string()
+    
+    def copy(self):
+        return FairString(self.str, self.letters[0])
+         
+    def animate_shift(self, scene, shft):
+        scene.play(
+            *[l.animate.shift(shft) for l in self.letters]
+        )
+    
+    def add(self, sp):
+        self.letters += sp.letters
+        self.str += sp.str
+
+class Construction1(Scene):
     def construct(self):
-        skip = True
+        skip = False
         self.next_section(skip_animations = skip)
         #OK, so here is how we do it. First, we really just think about the formulation of the problem with strings where we do not need to think in terms of probabilities. We just want to construct a string such that every permutation of letters occurs the same number of times in it.
         #[znovu ukázka nějakého stringu pro tři a počítání trojic] 
@@ -273,14 +305,14 @@ class Construction(Scene):
             ).next_to(
                 six_fair_strings[i-1].letters[0], DOWN
             )
-            new_s.write(self, pos_ = new_s.letters[0].get_center())
+            new_s.write(self)
             six_fair_strings.append(new_s)
         
         self.wait()
 
         #The first two solutions are actually kind of interesting, because they are just the triplet ABC concatenated six times, each time with its letters permuted differently. 
         #[nechají se jen první 2 řešení, udělají se mezery po částech]
-        skip = True
+        skip = False
         self.next_section(skip_animations = skip)
 
         self.play(
@@ -341,7 +373,7 @@ class Construction(Scene):
         s.reorganize_by_left_coordinate()
 
 
-        skip = True
+        skip = False
         self.next_section(skip_animations = skip)
         if not skip:
             s.create_buckets(
@@ -361,7 +393,7 @@ class Construction(Scene):
         #[udělají se šuplíky AB,AC,BA, BC, CA, CB, pak se spočítá]
         #Nice, they are the same. And this actually works independently on how we concatenate the permutations of the original string. 
 
-        skip = True
+        skip = False
         self.next_section(skip_animations = skip)
         
         s.create_buckets(
@@ -391,8 +423,10 @@ class Construction(Scene):
         
         for ind in [0, 4]:
             if ind == 4:
+                overscore1.move_to(s.letters[1].get_center() + over_shift)
+                overscore2.move_to(s.letters[1+3].get_center() + over_shift)
                 overletter1 = Tex("C", color = text_color).move_to(overscore1.get_center()).next_to(overscore1, UP)
-                overletter2 = Tex("A", color = text_color).move_to(overscore2.get_center()).next_to(overscore1, UP)
+                overletter2 = Tex("A", color = text_color).move_to(overscore2.get_center()).next_to(overscore2, UP)
                 
             #pairs from different parts
             self.next_section(skip_animations = False)
@@ -451,104 +485,110 @@ class Construction(Scene):
                         overletter1.animate.shift(shft)
                     )
 
-                cleanup_anims.append(
-                    s.find_pairs(self, [ind], [[3*i, 3*i+3], [3*i, 3*i+3]], highlight_color = RED)
-                )                   
+                cleanup_anims += s.find_pairs(self, [ind], [[3*i, 3*i+3], [3*i, 3*i+3]], highlight_color = RED)
+
+            #print(cleanup_anims)
             self.play(
                 FadeOut(overscore1),
                 FadeOut(overletter1),
                 *cleanup_anims
             )
+        
+        # In general, we can see that it does not matter how you order the six triplets, you will always get the same counts of ABs, BCs, and ACs. 
+        # [zase se přehází string, pak znovu celý výpočet]
+
+
         self.wait(10)
 
-class Permuting(Scene):
+class Construction2(Scene):
     def construct(self):
-        def sw(s, l1, l2):
-            return s.replace(l1, "Z").replace(l2, l1).replace("Z", l2)
-        
-        example_string = "ABCBCACABCBAACBBAC"
-        s_versions = [
-            example_string,
-            sw(example_string, "A", "B"),
-            sw(example_string, "A", "C"),
-            sw(example_string, "B", "C"),
-            sw(sw(example_string, "A", "B"), "A", "C"),
-            sw(sw(example_string, "A", "C"), "A", "B"),
+        #But it turns out that this argument is quite general, so do you see how we can build a fair string this way? Well, here is how we can do it. First, we start with the triplet ABC. Then, we do this construction, where we write it six times, we create the six versions of it and concatenate them in an arbitrary order to get a new string. And then … well we just do it one more time!
+        # [ABC, napíše se 6x pod sebe, propermutuje, zkonkatenuje, pak to samý]
+
+        base = FairString("ABC")
+        permutations = [
+            [],
+            [["A", "B"], ["B", "A"]],
+            [["A", "C"], ["C", "A"]],
+            [["C", "B"], ["B", "C"]],
+            [["A", "B"], ["B", "C"], ["C", "A"]],
+            [["A", "C"], ["C", "B"], ["B", "A"]],
         ]
 
-        texts = []
-        for i in range(6):
-            texts.append(Tex(
-                example_string,
-                color = text_color
-            ))
+        for i in range(2):
+            parts = [base.copy() for i in range(6)]
             if i == 0:
-                texts[i].shift(2*UP)
-            else:
-                texts[i].next_to(texts[i-1], DOWN)#.shift(0.5*DOWN)
-        
-        # first, the texts appear
-        self.play(
-            AnimationGroup(
-                *[Write(t) for t in texts],
-                lag_ratio = 0.5
+                parts[0].letters[0].shift(2*UP)
+                parts[0].write(self)
+            for i in range(1, 6):
+                parts[i].letters[0].align_to(
+                    parts[i-1].letters[0], LEFT
+                ).next_to(
+                    parts[i-1].letters[0], DOWN
+                )
+                parts[i].write(self)
+
+            # the triangle with A,B,C
+            rad = 0.75
+            
+            pA = Tex("A", color = text_color).shift(rad * (0.5 * DOWN + math.sqrt(3)/2 * LEFT))
+            pB = Tex("B", color = text_color).shift(rad * (0.5 * DOWN + math.sqrt(3)/2 * RIGHT))
+            pC = Tex("C", color = text_color).shift(rad * UP)
+
+            permutation_triangle = Group(pA, pB, pC).move_to(
+                parts[0].letters[0].get_center()
+            ).next_to(
+                parts[0].letters[0],
+                LEFT
+            ).shift(
+                0.5*LEFT
             )
-        )
 
-        # the triangle with A,B,C
-        rad = 0.75
-        
-        pA = Tex("A", color = text_color).shift(rad * (0.5 * DOWN + math.sqrt(3)/2 * LEFT))
-        pB = Tex("B", color = text_color).shift(rad * (0.5 * DOWN + math.sqrt(3)/2 * RIGHT))
-        pC = Tex("C", color = text_color).shift(rad * UP)
+            #Then we do the six transforms
+            for i in range(6):
+                if i == 0:
+                    self.play(FadeIn(permutation_triangle))
+                else:
+                    # first shift the triangle
+                    self.play(
+                        permutation_triangle.animate.shift(parts[i].letters[0].get_center() - parts[i-1].letters[0].get_center())
+                    )
 
-        permutation_triangle = Group(pA, pB, pC).move_to(
-            texts[0].get_center()
-        ).next_to(
-            texts[0],
-            LEFT
-        ).shift(
-            0.5*LEFT
-        )
+                    ar_width = 1
+                    arrows_to_create = Group()
+                    if i == 1:
+                        arrows_to_create.add(DoubleArrow(start = pA.get_center(), end = pB.get_center(), color = text_color, stroke_width = ar_width))
+                    if i == 2:
+                        arrows_to_create.add(DoubleArrow(start = pA.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
+                    if i == 3:
+                        arrows_to_create.add(DoubleArrow(start = pB.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
+                    if i == 4:
+                        arrows_to_create.add(Arrow(start = pA.get_center(), end = pB.get_center(), color = text_color, stroke_width = ar_width))
+                        arrows_to_create.add(Arrow(start = pB.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
+                        arrows_to_create.add(Arrow(start = pC.get_center(), end = pA.get_center(), color = text_color, stroke_width = ar_width))
+                    if i == 5:
+                        arrows_to_create.add(Arrow(start = pA.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
+                        arrows_to_create.add(Arrow(start = pC.get_center(), end = pB.get_center(), color = text_color, stroke_width = ar_width))
+                        arrows_to_create.add(Arrow(start = pB.get_center(), end = pA.get_center(), color = text_color, stroke_width = ar_width))
 
-        #Then we do the six transforms
-        for i in range(6):
-            if i == 0:
-                self.play(FadeIn(permutation_triangle))
-            else:
-                # first shift the triangle
-                self.play(
-                    permutation_triangle.animate.shift(texts[i].get_center() - texts[i-1].get_center())
+                    self.play(
+                        *[FadeIn(arrow) for arrow in arrows_to_create]                
+                    )
+                    parts[i].animated_permute(self, permutations[i])
+                    self.play(
+                        *[FadeOut(arrow) for arrow in arrows_to_create] 
+                    )
+
+            #Then we form one long string
+            parts[0].animate_shift(self, 1*LEFT)
+            for i in range(1, 6):
+                parts[i].animate_shift(
+                    self,
+                    parts[i-1].letters[len(parts[i-1].letters)-1].get_center()
+                    + default_sep * RIGHT
+                    - parts[i].letters[0].get_center()
                 )
 
-                ar_width = 1
-                arrows_to_create = Group()
-                if i == 1:
-                    arrows_to_create.add(DoubleArrow(start = pA.get_center(), end = pB.get_center(), color = text_color, stroke_width = ar_width))
-                if i == 2:
-                    arrows_to_create.add(DoubleArrow(start = pA.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
-                if i == 3:
-                    arrows_to_create.add(DoubleArrow(start = pB.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
-                if i == 4:
-                    arrows_to_create.add(Arrow(start = pA.get_center(), end = pB.get_center(), color = text_color, stroke_width = ar_width))
-                    arrows_to_create.add(Arrow(start = pB.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
-                    arrows_to_create.add(Arrow(start = pC.get_center(), end = pA.get_center(), color = text_color, stroke_width = ar_width))
-                if i == 5:
-                    arrows_to_create.add(Arrow(start = pA.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
-                    arrows_to_create.add(Arrow(start = pC.get_center(), end = pB.get_center(), color = text_color, stroke_width = ar_width))
-                    arrows_to_create.add(Arrow(start = pB.get_center(), end = pA.get_center(), color = text_color, stroke_width = ar_width))
-
-                anims = []
-                anims.append(
-                    Transform(texts[i], Tex(s_versions[i], color = text_color).move_to(texts[i].get_center()))
-                )
-                self.play(
-                    *anims,
-                    *[FadeIn(arrow) for arrow in arrows_to_create]                
-                )
-                self.play(
-                    *[FadeOut(arrow) for arrow in arrows_to_create] 
-                )
-
-        #Then we form one long string
-        #new_fair_string = 
+            #merge into one fair string
+            base = parts[0].add(parts[1]).add(parts[2]).add(parts[3]).add(parts[4]).add(parts[5])
+            
