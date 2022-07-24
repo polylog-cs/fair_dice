@@ -1039,11 +1039,11 @@ class Construction2(Scene):
             *[FadeOut(obj) for obj in self.mobjects]
         )
 
-class Construction3(Scene):
+class ConstructABCD(Scene):
     def construct(self):
         base = FairString("ABCD")
         sc1 = 0.5
-        sc2 = 0.3
+        sc2 = 0.35
         sc3 = 0.1
 
         permutations = []
@@ -1068,14 +1068,16 @@ class Construction3(Scene):
         
         for i in range(24):
             if i == 0:
-                parts[i].animate_shift_rescale(self, 5.5 * LEFT, sc2/sc1, sep = default_sep * sc2)
+                parts[i].animate_shift_rescale(self, 
+                6.7*LEFT + 3.8*UP - parts[i].letters[0].get_center(),
+                sc2/sc1, sep = default_sep * sc2)
             else:
                 parts[i].animate_shift_rescale(
                     self, 
                     parts[i-1].letters[3].get_center() + sc2 * default_sep * RIGHT - parts[i].letters[0].get_center(),
                     sc2/sc1, sep = default_sep * sc2
                 )
-
+        
         #druha iterace
         base = FairString("")
         for i in range(24):
@@ -1087,9 +1089,25 @@ class Construction3(Scene):
             parts[i].letters[0].move_to(parts[i-1].letters[0].get_center()).shift(0.2*DOWN)
             parts[i].write(self, center = False, scale = sc2)
             
+
         for i in range(24):
             parts[i].animated_permute(self,permutations[i], scale = sc2)
         self.wait()
+
+        parts2 = []
+        for i in range(24):
+            parts2.append(parts[i].copy())
+        for i in range(16):
+            if i == 0:
+                parts2[i].letters[0].move_to(parts[23].letters[0].get_center()).shift(0.2*DOWN)    
+            else:
+                parts2[i].letters[0].move_to(parts2[i-1].letters[0].get_center()).shift(0.2*DOWN)
+            parts2[i].write(self, center = False, scale = sc2)
+
+        for i in range(16):
+            parts2[i].animated_permute(self,permutations[1], scale = sc2)
+
+        return
 
         for i in range(24):
             if i == 0:
@@ -1107,7 +1125,6 @@ class Construction3(Scene):
                         parts[i-1].letters[4*24-1].get_center() + sc3 * default_sep * RIGHT - parts[i].letters[0].get_center(),
                         sc3/sc2, sep = default_sep * sc3
                     )
-         
         #treti iterace
         base = FairString("")
         for i in range(24):
@@ -1124,23 +1141,79 @@ class Construction3(Scene):
         self.wait()
 
 
-        self.play(
-            FadeIn(
-                Tex("55296 letters", color = text_color).shift(2*UP)
-            )
-        )
-        self.wait()
-        self.play(
-            FadeIn(
-                Tex(fair_strings4[0], color = text_color)
-            )
-        )
-        
-        self.wait()
+
         
         # self.play(
         #     *[FadeOut(obj) for obj in self.mobjects]
         # )
         # self.wait()
 
+class Scrolling(Scene):
+    def construct(self):
+        sc = 0.35
+        L = 50
+        strings = []
+        f = open("ABCD.txt", "r")
+        for _ in range(L):
+            letters = []
+            line = f.readline().strip()
+            for i in range(len(line)):
+                letters.append(
+                    Tex(line[i], color = text_color).scale(sc)
+                )
+            strings.append(letters)
 
+        for i in range(L):
+            for j in range(len(strings[i])):
+                if j == 0:
+                    if i == 0:
+                        strings[i][0].move_to(6.7*LEFT + 3.8*UP)
+                    else:
+                        strings[i][0].move_to(strings[i-1][0].get_center()).shift(0.2*DOWN)
+                else:
+                    strings[i][j].move_to(strings[i][j-1].get_center()).shift(default_sep*sc*RIGHT)
+
+        all_letters = []
+        for str in strings:
+            all_letters += str
+
+        self.add(
+            *all_letters
+        )
+
+        up_shift = 1*UP
+        self.play(
+            AnimationGroup(
+                *[l.animate.shift(up_shift) for l in all_letters],
+                rate_funce = linear,
+                run_time = 2
+            )
+        )
+
+        length_label = Tex("55296 letters", color = text_color).shift(2*UP).set_z_index(100)
+        self.play(
+            FadeIn(
+                length_label                
+            )
+        )
+        self.play(
+            AnimationGroup(
+                *[l.animate.shift(up_shift) for l in all_letters],
+                rate_funce = linear,
+                run_time = 2
+            )
+        )
+        self.play(
+            FadeIn(
+                Tex(fair_strings4[0], color = text_color).set_z_index(100)
+            )
+        )
+        self.play(
+            AnimationGroup(
+                *[l.animate.shift(up_shift) for l in all_letters],
+                rate_funce = linear,
+                run_time = 2
+            )
+        )
+        
+        self.wait()
