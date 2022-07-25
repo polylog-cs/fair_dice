@@ -1151,7 +1151,12 @@ class ConstructABCD(Scene):
 class Scrolling(Scene):
     def construct(self):
         sc = 0.35
-        L = 50
+        
+        #TODO change
+        L = 1
+        up_shift = 3*UP
+        test = 0
+        
         strings = []
         f = open("ABCD.txt", "r")
         for _ in range(L):
@@ -1167,7 +1172,7 @@ class Scrolling(Scene):
             for j in range(len(strings[i])):
                 if j == 0:
                     if i == 0:
-                        strings[i][0].move_to(6.7*LEFT + 3.8*UP)
+                        strings[i][0].move_to(6.7*LEFT + 3.8*UP+test*5*DOWN)
                     else:
                         strings[i][0].move_to(strings[i-1][0].get_center()).shift(0.2*DOWN)
                 else:
@@ -1181,39 +1186,44 @@ class Scrolling(Scene):
             *all_letters
         )
 
-        up_shift = 1*UP
+
         self.play(
             AnimationGroup(
-                *[l.animate.shift(up_shift) for l in all_letters],
-                rate_funce = linear,
-                run_time = 2
+                AnimationGroup(
+                    *[l.animate.shift(up_shift) for l in all_letters],
+                    run_time = 8
+                ),
+                Succession(
+                    Wait(2),
+                    Write(Tex("55296 letters", color = text_color).shift(2*UP).set_z_index(100))
+                ),
+                Succession(
+                    Wait(4),
+                    Write(Tex(fair_strings4[0], color = text_color).set_z_index(100))
+                ),
             )
         )
 
-        length_label = Tex("55296 letters", color = text_color).shift(2*UP).set_z_index(100)
-        self.play(
-            FadeIn(
-                length_label                
-            )
-        )
-        self.play(
-            AnimationGroup(
-                *[l.animate.shift(up_shift) for l in all_letters],
-                rate_funce = linear,
-                run_time = 2
-            )
-        )
-        self.play(
-            FadeIn(
-                Tex(fair_strings4[0], color = text_color).set_z_index(100)
-            )
-        )
-        self.play(
-            AnimationGroup(
-                *[l.animate.shift(up_shift) for l in all_letters],
-                rate_funce = linear,
-                run_time = 2
-            )
-        )
+        # length_label = Tex("55296 letters", color = text_color).shift(2*UP).set_z_index(100)
+        # self.add(
+        #     length_label                
+        # )
+        # self.play(
+        #     AnimationGroup(
+        #         *[l.animate.shift(up_shift) for l in all_letters],
+        #         rate_func = linear,
+        #         run_time = 2
+        #     )
+        # )
+        # self.add(
+        #     Tex(fair_strings4[0], color = text_color).set_z_index(100)
+        # )
+        # self.play(
+        #     AnimationGroup(
+        #         *[l.animate.shift(up_shift) for l in all_letters],
+        #         rate_func = linear,
+        #         run_time = 2
+        #     )
+        # )
         
         self.wait()
