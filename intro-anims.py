@@ -29,6 +29,23 @@ arbitrary_dice = [
     [5, 9, 11, 14, 15, 32, 99],
     [3, 5, 10, 18, 42, 47, 99]
 ]
+# pro testovani
+dice = [
+    [1, 2, 9],
+    [4, 5, 7],
+    [3, 6, 8]
+]
+# ferova kostka ABCBCA CABCBA ACBBAC
+dice = [
+    [1, 6, 8, 12, 13, 17],
+    [2, 4, 9, 11, 15, 16],
+    [3, 5, 7, 10, 14, 18]
+]
+
+VIOLET = BLUE
+MAGENTA = BLUE
+colors = [GREEN, TEAL, BLUE, VIOLET, MAGENTA, RED, ORANGE] # TODO restrict to 6 colors
+
 #fstring = "ACBCAABCBABBACABCC"
 equivalent_dice = [[], [], []]
 fair_strings = [
@@ -43,8 +60,8 @@ fair_strings = [
 class DiceSquare(Scene):
     def construct(self):
         player_labels = [
-            Tex("Player A", color = text_color),
-            Tex("Player B", color = text_color)
+            Tex("Player A die: ", color = text_color),
+            Tex("Player B die: ", color = text_color)
         ]
         player_labels[0].move_to(3*LEFT)
         player_labels[1].move_to(3*RIGHT)
@@ -57,16 +74,44 @@ class DiceSquare(Scene):
                     Tex(example_dice_str[i][j], color = text_color)
                 )
                 if j == 0:
-                    dice_numbers[i][j].move_to(player_labels[i].get_left()-2*LEFT).next_to(player_labels[i], DOWN)
+                    dice_numbers[i][j].next_to(player_labels[i], DOWN).align_to(player_labels[i], LEFT)
                 else:
                     dice_numbers[i][j].next_to(dice_numbers[i][j-1], RIGHT)
                     if j %2 == 1:
-                        dice_numbers[i][j].shift(0.3*DOWN)
+                        dice_numbers[i][j].shift(0.2*DOWN + 0.2*LEFT)
+                    else:
+                        dice_numbers[i][j].shift(0.2*UP + 0.1*LEFT)
 
         self.play(
-            *[FadeIn(nums) for nums in dice_numbers[0]],
-            *[FadeIn(nums) for nums in dice_numbers[1]],
             *[FadeIn(labels) for labels in player_labels]
+        )
+        self.wait()
+        self.play(
+            AnimationGroup(
+                *[FadeIn(nums) for nums in dice_numbers[0]],
+                lag_ratio = 0.15
+            )
+        )
+        self.wait()
+        self.play(
+            AnimationGroup(
+                *[FadeIn(nums) for nums in dice_numbers[1]],
+                lag_ratio = 0.15
+            )
+        )
+        self.wait()
+        bad_number = Tex("12", color = text_color).next_to(dice_numbers[0][-1], RIGHT).align_to(dice_numbers[0][-1], LEFT)
+        good_number = Tex("11", color = text_color).move_to(dice_numbers[0][-1].get_center())
+
+        self.play(
+            Succession(
+                Transform(dice_numbers[0][-1], bad_number),
+                AnimationGroup(
+                    Circumscribe(dice_numbers[0][-1], color = RED),
+                    Circumscribe(dice_numbers[1][-1], color = RED)
+                ),
+                Transform(dice_numbers[0][-1], good_number)
+            )
         )
         self.wait()
 
@@ -128,8 +173,6 @@ class DiceSquare(Scene):
         dice_numbers = dice_numbers_real
         self.wait()
 
-
-        #TODO fill in color
         #show A<B and A>B
         squares = []
         blue_squares = []
@@ -139,7 +182,7 @@ class DiceSquare(Scene):
             for j in range(6):
                 square = Square(side_length = 0.8, fill_color = RED, stroke_color = RED).move_to(
                     2.5*side_length*LEFT + 2.5*side_length*UP + shft + i*side_length*RIGHT + j * side_length * DOWN
-                )
+                ).set_fill(RED, opacity=1.0).set_z_index(-100)
                 if example_dice[0][i] > example_dice[1][j]:
                     square.set_color(BLUE)
                     square.set_fill(BLUE)
@@ -158,11 +201,15 @@ class DiceSquare(Scene):
         )
         self.wait()
 
+        for square in red_squares:
+            square.set_z_index(-50)
         self.play(
             *[Indicate(square, color = RED) for square in red_squares]
         )
         self.wait()
 
+        for square in blue_squares:
+            square.set_z_index(-20)
         self.play(
             *[Indicate(square, color = BLUE) for square in blue_squares]
         )
@@ -557,3 +604,86 @@ class Aligning2(Scene):
             FadeIn(eq2)
         )
         self.wait()
+
+
+
+class DiceCube(ThreeDScene):
+    def construct(self):
+        self.set_camera_orientation(phi = 45*DEGREES, theta = -45*DEGREES)
+        axes = ThreeDAxes(x_range = [0, 5, 1], y_range = [0, 5, 1], z_range = [0, 5, 1]).add_coordinates()
+        #self.add(axes)
+        base = Cube(side_length = 1).move_to(ORIGIN)
+        # self.add(
+        #     base,
+        #     Cube(side_length = 1, fill_color = RED).move_to(ORIGIN).shift(1*LEFT),
+        #     Cube(side_length = 1, fill_color = BLUE).move_to(ORIGIN).shift(1*UP),
+        #     Cube(side_length = 1, fill_color = GREEN).move_to(ORIGIN).shift(1*OUT)
+        # )
+
+        labels = []
+        nexts = [RIGHT, DOWN, RIGHT + DOWN + OUT]
+        dirs = [UP, LEFT, OUT]
+        for i in range(3):
+            labels.append([])
+            for j in range(len(dice[i])):
+                l = Tex(str(dice[i][j]))
+                if i == 1:
+                    l.rotate_about_origin(90*DEGREES,OUT)
+                if i == 2:
+                    l.rotate_about_origin(45*DEGREES, OUT).rotate_about_origin(90*DEGREES, RIGHT-DOWN)
+                
+                if j == 0:
+                    labels[i].append(
+                        l.move_to(base.get_center()).next_to(base, nexts[i]).shift(0.5*nexts[i])
+                    )   
+                else:
+                    labels[i].append(
+                        l.move_to(labels[i][j-1].get_center() + dirs[i])
+                    )
+        self.add(
+            *labels[0],
+            *labels[1],
+            *labels[2]
+        )
+    
+        # self.add(
+        #     Tex("right").move_to(base.get_center()).next_to(base, RIGHT),
+        #     Tex("down").rotate_about_origin(90*DEGREES,OUT).move_to(base.get_center()).next_to(base, DOWN),
+        #     Tex("out").rotate_about_origin(45*DEGREES, OUT).rotate_about_origin(90*DEGREES, RIGHT-DOWN).move_to(base.get_center()).next_to(base, RIGHT + DOWN + OUT),
+        # )
+
+        self.begin_ambient_camera_rotation(
+            rate = PI/10,
+            about = "theta"
+        )
+
+        for it, perm in enumerate(itertools.permutations([0, 1, 2])):
+            cubes_to_appear = []            
+            for i in range(len(dice[0])):
+                for j in range(len(dice[1])):
+                    for k in range(len(dice[2])):
+                        vals = [dice[0][i], dice[1][j], dice[2][k]]
+                        perm_vals = [vals[perm[0]], vals[perm[1]], vals[perm[2]]]
+                        if perm_vals == sorted(perm_vals):
+                            cubes_to_appear.append(
+                                Cube(
+                                    side_length=1,
+                                    fill_color = colors[it]
+                                ).move_to(ORIGIN).shift(i*dirs[0]+j*dirs[1]+k*dirs[2])
+                            )
+            if cubes_to_appear != []:
+                self.add(
+                    *cubes_to_appear
+                )
+                self.wait()
+                self.remove(
+                    *cubes_to_appear
+                )
+                self.wait()
+                # self.play(
+                #     *[FadeIn(cube) for cube in cubes_to_appear]
+                # )
+                # self.play(
+                #     *[FadeOut(cube) for cube in cubes_to_appear]
+                # )
+        self.stop_ambient_camera_rotation()
