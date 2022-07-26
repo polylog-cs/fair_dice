@@ -7,6 +7,10 @@ from functools import cmp_to_key
 import copy
 import itertools
 
+import util
+
+print(f"Util: {util.a}, {util.f(5)}")
+
 example_dice = [
     [1, 3, 5, 7, 9, 11],
     [2, 4, 6, 8, 10, 12]
