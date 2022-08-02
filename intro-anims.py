@@ -197,75 +197,79 @@ class DiceSquare(Scene):
             *[square.animate.set_color(BLUE) for square in [squares[3][3], squares[4][4], squares[5][5]]]
         )
         self.wait()
+        self.play(
+            *[FadeOut(o) for o in self.mobjects]
+        )
+        self.wait()
 
         # the other solution
 
-        orig_positions = [
-            [num.get_center() for num in dice_numbers[0]],
-            [num.get_center() for num in dice_numbers[1]]
-        ]
+        # orig_positions = [
+        #     [num.get_center() for num in dice_numbers[0]],
+        #     [num.get_center() for num in dice_numbers[1]]
+        # ]
         
 
-        dice_numbers_sorted = list(itertools.chain(*zip(dice_numbers[0], dice_numbers[1])))
-        for i, num in enumerate(dice_numbers_sorted):
-            num.generate_target()
-            if i == 0:
-                num.target.move_to(6.5*LEFT + 3.3*UP)
-            elif i == 6:
-                num.target.move_to(dice_numbers[0][0].target.get_center()).next_to(dice_numbers[0][0].target, DOWN)
-            else:
-                num.target.move_to(dice_numbers_sorted[i-1].target.get_center()).next_to(dice_numbers_sorted[i-1].target, RIGHT).shift(0.2*RIGHT)
+        # dice_numbers_sorted = list(itertools.chain(*zip(dice_numbers[0], dice_numbers[1])))
+        # for i, num in enumerate(dice_numbers_sorted):
+        #     num.generate_target()
+        #     if i == 0:
+        #         num.target.move_to(6.5*LEFT + 3.3*UP)
+        #     elif i == 6:
+        #         num.target.move_to(dice_numbers[0][0].target.get_center()).next_to(dice_numbers[0][0].target, DOWN)
+        #     else:
+        #         num.target.move_to(dice_numbers_sorted[i-1].target.get_center()).next_to(dice_numbers_sorted[i-1].target, RIGHT).shift(0.2*RIGHT)
 
-        self.play(
-            *[MoveToTarget(num) for num in dice_numbers_sorted],
-            *[FadeOut(square) for line in squares for square in line]
-        )
-        self.wait()
+        # self.play(
+        #     *[MoveToTarget(num) for num in dice_numbers_sorted],
+        #     *[FadeOut(square) for line in squares for square in line]
+        # )
+        # self.wait()
 
-        self.play(
-            AnimationGroup(
-                dice_numbers_sorted[0].animate.move_to(orig_positions[0][0]),
-                dice_numbers_sorted[1].animate.move_to(orig_positions[0][1]),
-                dice_numbers_sorted[2].animate.move_to(orig_positions[0][2]),
-                lag_ratio = 0.3
-            )
-        )
-        self.wait()
+        # self.play(
+        #     AnimationGroup(
+        #         dice_numbers_sorted[0].animate.move_to(orig_positions[0][0]),
+        #         dice_numbers_sorted[1].animate.move_to(orig_positions[0][1]),
+        #         dice_numbers_sorted[2].animate.move_to(orig_positions[0][2]),
+        #         lag_ratio = 0.3
+        #     )
+        # )
+        # self.wait()
 
-        self.play(
-            AnimationGroup(
-                dice_numbers_sorted[3].animate.move_to(orig_positions[1][0]),
-                dice_numbers_sorted[4].animate.move_to(orig_positions[1][1]),
-                dice_numbers_sorted[5].animate.move_to(orig_positions[1][2]),
-                dice_numbers_sorted[6].animate.move_to(orig_positions[0][3]),
-                dice_numbers_sorted[7].animate.move_to(orig_positions[0][4]),
-                dice_numbers_sorted[8].animate.move_to(orig_positions[0][5]),
-                lag_ratio = 0.3
-            )
-        )
-        self.wait()
+        # self.play(
+        #     AnimationGroup(
+        #         dice_numbers_sorted[3].animate.move_to(orig_positions[1][0]),
+        #         dice_numbers_sorted[4].animate.move_to(orig_positions[1][1]),
+        #         dice_numbers_sorted[5].animate.move_to(orig_positions[1][2]),
+        #         dice_numbers_sorted[6].animate.move_to(orig_positions[0][3]),
+        #         dice_numbers_sorted[7].animate.move_to(orig_positions[0][4]),
+        #         dice_numbers_sorted[8].animate.move_to(orig_positions[0][5]),
+        #         lag_ratio = 0.3
+        #     )
+        # )
+        # self.wait()
 
-        self.play(
-            AnimationGroup(
-                dice_numbers_sorted[9].animate.move_to(orig_positions[1][3]),
-                dice_numbers_sorted[10].animate.move_to(orig_positions[1][4]),
-                dice_numbers_sorted[11].animate.move_to(orig_positions[1][5]),
-                lag_ratio = 0.3
-            )
-        )
-        self.wait()
+        # self.play(
+        #     AnimationGroup(
+        #         dice_numbers_sorted[9].animate.move_to(orig_positions[1][3]),
+        #         dice_numbers_sorted[10].animate.move_to(orig_positions[1][4]),
+        #         dice_numbers_sorted[11].animate.move_to(orig_positions[1][5]),
+        #         lag_ratio = 0.3
+        #     )
+        # )
+        # self.wait()
 
-        for i in range(3):
-            for j in range(6):
-                squares[i][j].set_color(RED)
-        for i in range(3, 6):
-            for j in range(6):
-                squares[i][j].set_color(BLUE)
+        # for i in range(3):
+        #     for j in range(6):
+        #         squares[i][j].set_color(RED)
+        # for i in range(3, 6):
+        #     for j in range(6):
+        #         squares[i][j].set_color(BLUE)
 
-        self.play(
-            *[FadeIn(square) for line in squares for square in line]
-        )
-        self.wait()
+        # self.play(
+        #     *[FadeIn(square) for line in squares for square in line]
+        # )
+        # self.wait()
 
 #TODO put camera to the right place
 pos_three_dice = 3*UP
@@ -437,8 +441,9 @@ class FairExamples(Scene):
         )
         self.wait()
 
-        t1 = Tex("{{125 }}{{possible outcomes}}", color = text_color).next_to(ttl2, DOWN).shift(DOWN)
-        t2 = Tex("{{6 }}{{same sized groups}}", color = text_color).next_to(t1, DOWN)
+        t1 = Tex("{{$5^3$}}{{ possible outcomes}}", color = text_color).next_to(ttl2, DOWN).shift(DOWN)
+        t1new = Tex("{{$125$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center())
+        t2 = Tex("{{6 }}{{equally-sized groups}}", color = text_color).next_to(t1, DOWN)
         t3 = Tex(r"{{$\frac{125}{6}$}}{{ outcomes per group}}", color = text_color).next_to(t2, DOWN)
         t3new = Tex(r"{{$20.833\dots$}}{{ outcomes per group}}", color = text_color).move_to(t3.get_center())
 
@@ -446,6 +451,14 @@ class FairExamples(Scene):
             Succession(
                 FadeIn(t1),
                 Wait(),
+            )
+        )
+        self.play(
+            Transform(t1, t1new)
+        )
+        self.wait()
+        self.play(
+            Succession(
                 FadeIn(t2),
                 Wait(),
                 FadeIn(t3),
@@ -458,13 +471,13 @@ class FairExamples(Scene):
         self.wait()
 
         ttl5 = Tex(r"{{five }}{{s}}{{-sided dic}}{{e}}", color = text_color).move_to(ttl2.get_center())
-        t15 = Tex(r"{{$s^5$ }}{{possible outcomes}}", color = text_color).move_to(t1.get_center())
-        t25 = Tex(r"{{$5!$ }}{{same sized groups}}", color = text_color).move_to(t2.get_center())
+        t15 = Tex(r"{{$s^5$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center())
+        t25 = Tex(r"{{$5!$ }}{{equally-sized groups}}", color = text_color).move_to(t2.get_center())
         t35 = Tex(r"{{$\frac{s^5}{5!}$}}{{ outcomes per group}}", color = text_color).move_to(t3.get_center())
 
         tdiv = Tex(r"{{$5!$}}{{$\mid$}}{{$ s^5$}}", color = text_color).next_to(t2, DOWN)
         tdiv2 = Tex(r"{{$5\cdot 4 \cdot 3 \cdot 2$}}{{$\mid$}}{{$ s^5$}}", color = text_color).move_to(tdiv.get_center())
-        t4 = Tex(r"$2, 3, 5 \mid s$", color = text_color).next_to(tdiv2, DOWN)
+        t4 = Tex(r"$2, 3, 5 \mid s$", color = text_color).next_to(tdiv2, DOWN).shift(0.5*DOWN)
         t5 = Tex(r"{{$s \ge $}}{{$\,2 \cdot 3 \cdot 5$}}", color = text_color).next_to(t4, DOWN)
         t52= Tex(r"{{$s \ge $}}{{$\,30$}}", color = text_color).move_to(t5.get_center())
 
@@ -516,14 +529,20 @@ class FairExamples(Scene):
         l1 = Tex(txt, color = text_color).scale(0.7).shift(1*UP)
         l2 = Tex(txt2, color = text_color).scale(0.7).next_to(l1, DOWN).shift(DOWN)
 
-        self.add(
-            l1,
-            l2
+        self.play(
+            AnimationGroup(
+                FadeIn(l1),
+                FadeIn(l2)
+            ),
+            run_time = 0.3
         )
         self.wait()
-        self.remove(
-            l1,
-            l2
+        self.play(
+            AnimationGroup(
+                FadeOut(l1),
+                FadeOut(l2)
+            ),
+            run_time = 0.3
         )
         self.wait()
 

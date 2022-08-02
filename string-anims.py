@@ -455,6 +455,7 @@ class Construction2(Scene):
                 parts[0].letters[0].shift(2*UP)
                 parts[0].write(self)
             if it == 1:
+                print((parts[0].letters[0].get_center() + parts[0].letters[len(parts[0].letters)-1].get_center())/2 * LEFT)
                 parts[0].animate_shift(
                     self,
                     (parts[0].letters[0].get_center() + parts[0].letters[len(parts[0].letters)-1].get_center())/2 * LEFT
@@ -525,7 +526,7 @@ class Construction2(Scene):
             )
             #Then we form one long string
             if it == 0:
-                parts[0].animate_shift(self, 1*LEFT)
+                parts[0].animate_shift(self, 3*LEFT)
                 for i in range(1, 6):
                     parts[i].animate_shift(
                         self,
@@ -618,7 +619,7 @@ class Construction2(Scene):
         )
 
         self.play(
-            Circumscribe(Group(base.counters[i], base.counter_titles[i]), color = RED),
+            Circumscribe(Group(base.counters[0], base.counter_titles[0]), color = RED),
         )
 
         self.play(
@@ -660,6 +661,10 @@ class Construction2(Scene):
             Transform(overtext2, Tex("\#C = \#B", color = text_color).move_to(overtext2.get_center())),
         )
         self.wait()
+
+        self.play(
+            Circumscribe(Group(base.counters[4], base.counter_titles[4]), color = RED),
+        )
 
         self.play(
             Transform(overtext1, Tex("CA", color = text_color).move_to(overtext1.get_center())),
@@ -971,7 +976,7 @@ class ConstructABCD(Scene):
 
         base2 = base.copy()
         for l, l2 in zip(base.letters, base2.letters):
-            l2.scale(sc2).move_to(l.get_center()).shift(parts[23].letters[0].get_center() - parts[0].letters[0].get_center() + 0.3*DOWN)
+            l2.scale(sc2).move_to(l.get_center()).shift(24*(parts[1].letters[0].get_center() - parts[0].letters[0].get_center()))
         self.play(
             *[FadeIn(l) for l in base2.letters]
         )
@@ -1055,7 +1060,7 @@ class Scrolling(Scene):
             AnimationGroup(
                 AnimationGroup(
                     *[l.animate.shift(up_shift) for l in all_letters],
-                    run_time = 8
+                    run_time = 16
                 ),
                 Succession(
                     Wait(2),
@@ -1064,8 +1069,8 @@ class Scrolling(Scene):
                 Succession(
                     Wait(4),
                     AnimationGroup(
-                        Write(Tex(list_to_string(four_dice), color = BLUE).shift(3*DOWN).scale(0.8).set_z_index(100)),
-                        Write(Tex("48 letters: ", color = BLUE).shift(2*DOWN).set_z_index(100))
+                        Write(Tex(list_to_string(four_dice), color = DARK_GRAY).shift(3*DOWN).scale(0.8).set_z_index(100)),
+                        Write(Tex("48 letters: ", color = DARK_GRAY).shift(2*DOWN).scale(2).set_z_index(100))
                     )
                 ),
             )
