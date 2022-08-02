@@ -1,343 +1,209 @@
-import random
-import math
-import numpy as np
-from manim import *
-from solarized import *
-from functools import cmp_to_key
-import copy
-import itertools
 
-text_color = GRAY
-background_color = config.background_color
-under_shift = 0.3* DOWN
-over_shift = 0.3*UP
-default_sep = 0.4
-
-fair_strings = [
-"ABCBCACABCBAACBBAC",
-"ABCCBABCAACBCABBAC",
-"ABCCBABACCABCABBAC",
-"ABCCBABACCABCBAABC",
-"ABCCBACABBACBACCAB",
-"ABCCABCBBAACABCCAB"
-]
-
-fair_strings4 = [
-    "????????????????"
-]
-
-def rotate(vec, angle):
-    return [
-        vec[0]*np.cos(angle) - vec[1]*np.sin(angle),
-        vec[0]*np.sin(angle) + vec[1]*np.cos(angle)
-    ]
+from util import *
 
 
-class FairString:
-    def __init__(self, str_, pos_ = 0*LEFT):
-        self.str = str_
-        self.letters = [
-            Tex(l, color = text_color)
-            for l in self.str
+
+class Equivalence(Scene):
+    def construct(self):
+        for i in range(3):
+            three_dice[i].append(99)
+        labels = [
+            Tex("A:", color = text_color),
+            Tex("B:", color = text_color),
+            Tex("C:", color = text_color),
         ]
-        self.counters = []
-        self.counter_titles = []
+        labels[1].shift(5*LEFT)
+        labels[0].move_to(labels[1].get_center()).next_to(labels[1], UP)
+        labels[2].move_to(labels[1].get_center()).next_to(labels[1], DOWN)
 
-    def write(self, scene, pos_ = None, sep = default_sep, center = True, scale = 1):
-        if pos_ is None:
-            pos_ = self.letters[0].get_center()        
-
-        for i, l in enumerate(self.letters):
-            l.scale(scale)
-            if i == 0:
-                l.move_to(pos_)
-            else:
-                l.move_to(self.letters[i-1].get_center() + sep * scale * RIGHT)
-        
-        if center == True:
-            off = (self.letters[0].get_center() + self.letters[len(self.letters) - 1].get_center())/2
-            for l in self.letters:
-                l.shift(off * LEFT)
-
-        scene.play(
-            AnimationGroup(
-                *[FadeIn(l) for l in self.letters],
-            ),
-            run_time = 0.1
-        )
-
-    def create_from_list_of_letters(self, letters):
-        self.letters = letters
-        self.str = ""
-        for l in self.letters:
-            self.str += l.get_tex_string()
-        self.counters = []
-        self.counter_titles = []
-
-    def find_pairs(self, scene, match_set, ranges = [None, None], highlight_color = None):
-        underscore1 = Line(start = -0.1*RIGHT + under_shift, end = 0.1*RIGHT + under_shift, color = text_color)
-        underscore2 = underscore1.copy()
-        #anims = []
-        beg = True
-        if ranges[0] == None:
-            ranges = [[0, len(self.str)], [0, len(self.str)]]
-        cleanup_anims = []
-
-        for i in range(ranges[0][0], ranges[0][1]):
-            for j in range(max(i+1, ranges[1][0]), ranges[1][1]):
-                for mi in match_set:
-                    if self.str[i] == self.counter_letters[mi][0] and self.str[j] == self.counter_letters[mi][1]:
-                        if beg == True:
-                            underscore1.move_to(self.letters[i].get_center() + under_shift)
-                            underscore2.move_to(self.letters[j].get_center() + under_shift)
-                            scene.play(
-                                AnimationGroup(
-                                    Create(underscore1),
-                                    Create(underscore2)
-                                ),
-                                run_time = 0.1
-                            )
-                            beg = False
-                        else:
-                            scene.play(
-                                AnimationGroup(
-                                    underscore1.animate.move_to(self.letters[i].get_center() + under_shift),
-                                    underscore2.animate.move_to(self.letters[j].get_center() + under_shift),
-                                    run_time = 0.1
-                                )
-                            )
-                        flying_letter1 = self.letters[i].copy()
-                        flying_letter2 = self.letters[j].copy()
-                        end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
-                        anims = [
-                            self.counters[mi].animate.increment_value(1),
-                            Transform(flying_letter1, end_dot),
-                            Transform(flying_letter2, end_dot),
-                        ]
-                        if highlight_color != None:
-                            anims += [
-                                self.letters[i].animate.set_color(highlight_color),
-                                self.letters[j].animate.set_color(highlight_color)
-                            ]
-                            cleanup_anims += [
-                                self.letters[i].animate.set_color(text_color),
-                                self.letters[j].animate.set_color(text_color)
-                            ]
-                        scene.play(
-                            AnimationGroup(
-                                *anims,
-                                run_time = 1
-                            )
-                        )
-        if beg == False:
-            scene.play(
-                Uncreate(underscore1),
-                Uncreate(underscore2),
-                run_time = 0.1
-            )
-        return cleanup_anims
-
-    def find_triplets(self, scene, match_set, ranges = [None, None, None], scale = 1, cheap_after_steps = None, prob = 1):
-        underscore1 = Line(start = -0.1*RIGHT + under_shift, end = 0.1*RIGHT + under_shift, color = text_color)
-        underscore2 = underscore1.copy()
-        underscore3 = underscore1.copy()
-        #anims = []
-        beg = True
-        if ranges[0] == None:
-            ranges = [[0, len(self.str)], [0, len(self.str)], [0, len(self.str)]]
-        cnt = 0
-        fst_cheap = True
-        counter_changes_to_do = [0] * len(self.counters)
-
-        for i in range(ranges[0][0], ranges[0][1]):
-            for j in range(max(i+1, ranges[1][0]), ranges[1][1]):
-                for k in range(max(j+1, ranges[2][0]), ranges[2][1]):
-                    for mi in match_set:
-                        if self.str[i] == self.counter_letters[mi][0] and self.str[j] == self.counter_letters[mi][1] and self.str[k] == self.counter_letters[mi][2]:
-                            if cheap_after_steps == None or cheap_after_steps > cnt:
-                                if beg == True:
-                                    underscore1.move_to(self.letters[i].get_center() + under_shift * scale)
-                                    underscore2.move_to(self.letters[j].get_center() + under_shift * scale)
-                                    underscore3.move_to(self.letters[k].get_center() + under_shift * scale)
-                                    scene.play(
-                                        AnimationGroup(
-                                            Create(underscore1),
-                                            Create(underscore2),
-                                            Create(underscore3)
-                                        ),
-                                        run_time = 0.1
-                                    )
-                                    beg = False
-                                else:
-                                    scene.play(
-                                        AnimationGroup(
-                                            underscore1.animate.move_to(self.letters[i].get_center() + under_shift * scale),
-                                            underscore2.animate.move_to(self.letters[j].get_center() + under_shift * scale),
-                                            underscore3.animate.move_to(self.letters[k].get_center() + under_shift * scale),
-                                            run_time = 0.1
-                                        )
-                                    )
-                                flying_letter1 = self.letters[i].copy()
-                                flying_letter2 = self.letters[j].copy()
-                                flying_letter3 = self.letters[k].copy()
-                                end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
-                                scene.play(
-                                    AnimationGroup(
-                                        self.counters[mi].animate.increment_value(1),
-                                        Transform(flying_letter1, end_dot),
-                                        Transform(flying_letter2, end_dot),
-                                        Transform(flying_letter3, end_dot),
-                                        run_time = 1
-                                    )
-                                )
-                            else: #cheap steps, only with probability prob
-                                # if fst_cheap == True:
-                                #     fst_cheap = False
-                                #     scene.play(
-                                #         Uncreate(underscore2),
-                                #         Uncreate(underscore3)
-                                #     )
-                                counter_changes_to_do[mi] += 1
-                                if random.random() < prob:
-                                    scene.play(
-                                        AnimationGroup(
-                                            underscore1.animate.move_to(self.letters[i].get_center() + under_shift * scale),
-                                            underscore2.animate.move_to(self.letters[j].get_center() + under_shift * scale),
-                                            underscore3.animate.move_to(self.letters[k].get_center() + under_shift * scale),
-                                            run_time = 0.1
-                                        )
-                                    )
-                                    flying_letter1 = self.letters[i].copy()
-                                    flying_letter2 = self.letters[j].copy()
-                                    flying_letter3 = self.letters[k].copy()
-                                    end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
-                                    scene.play(
-                                        AnimationGroup(
-                                            *[self.counters[it].animate.increment_value(counter_changes_to_do[it]) for it in range(len(self.counters))],
-                                            Transform(flying_letter1, end_dot),
-                                            Transform(flying_letter2, end_dot),
-                                            Transform(flying_letter3, end_dot),
-                                            run_time = 1
-                                        )
-                                    )
-                                    counter_changes_to_do = [0]*len(self.counters)
-                            cnt += 1
-        if counter_changes_to_do != [0]*len(self.counters):
-            for it in range(len(self.counters)):
-                self.counters[it].increment_value(counter_changes_to_do[it])
-                scene.add(self.counters[it])
-
-        if beg == False:
-            # if fst_cheap == True:
-            scene.play(
-                Uncreate(underscore1),
-                Uncreate(underscore2),
-                Uncreate(underscore3),
-            )
-
-    def create_buckets(self, scene, bucket_names, bucket_letters):
-        positions = [(1.5*(i+0.5))*RIGHT + 2*DOWN for i in range(-3, 3)]
-        self.counter_letters = bucket_letters
-
-        for i, (name, pos) in enumerate(zip(bucket_names, positions)):
-            counter = Integer(
-                    number = 0,
-                    color = text_color
-                ).move_to(
-                    pos
+        numbers = []
+        for i in range(3):
+            numbers.append([])
+            for j in range(6):
+                numbers[i].append(
+                    Tex(three_dice[i][j], color = text_color)
                 )
-            counter_title = Tex(
-                name,
-                color = text_color
-            ).move_to(counter.get_center()).next_to(counter, DOWN)
-
-            #tracker = ValueTracker(0)
-
-            self.counters.append(counter)
-            self.counter_titles.append(counter_title)
-            
-
-            scene.play(
-                Write(counter),
-                Write(counter_title)
-            )
-
-    def clear_counters(self, scene):
-        scene.play(
-            *[counter.animate.set_value(0) for counter in self.counters]
-        )
+                if j == 0:
+                    numbers[i][j].next_to(labels[i], RIGHT).shift(3*RIGHT)
+                else:
+                    numbers[i][j].next_to(numbers[i][j-1], RIGHT).shift(0.3*RIGHT)
         
-    def delete_buckets(self, scene):
-        scene.play(
-            *[FadeOut(bucket) for bucket in self.counters],
-            *[FadeOut(bucket_title) for bucket_title in self.counter_titles]
+        self.play(
+            *[FadeIn(lab) for lab in labels],
+            *[FadeIn(num) for nums in numbers for num in nums],
         )
-        self.counters = []
-        self.counter_titles = []
+        self.wait()
 
-    def delete(self, scene):
-        scene.play(
-            *[FadeOut(l) for l in self.letters],
-            *[FadeOut(bucket) for bucket in self.counters],
-            *[FadeOut(bucket_title) for bucket_title in self.counter_titles]
-        )
-        self.counters = []
-        self.counter_titles = []
-
-    def update_string(self):
-        self.str = ""
-        for l in self.letters:
-            self.str += l.get_tex_string()
-
-    def reorganize_by_left_coordinate(self):
-        #change the order of letters based on their current position on the screen
-        self.letters.sort(key = cmp_to_key(lambda l1, l2: l1.get_center()[0] - l2.get_center()[0]))
-        self.update_string()
-
-    def animated_permute(self, scene, perm_list, scale = 1):
+        iss = [0, 0, 0]
         anims = []
-        for i in range(len(self.letters)):
-            for f, t in perm_list:
-                if self.str[i] == f:
-                    self.str = self.str[:i] + t + self.str[i+1:]
-                    anims.append(
-                        Transform(
-                            self.letters[i], 
-                            Tex(t, color = text_color).scale(scale).move_to(self.letters[i].get_center())
-                        )
+        numbers_sorted = []
+        for it in range(18):
+            act_vals = [three_dice[0][iss[0]], three_dice[1][iss[1]], three_dice[2][iss[2]]]
+            act = act_vals.index(min(*act_vals))
+            target = Tex(str(it+1), color = text_color).next_to(labels[act], RIGHT).shift(0.55*RIGHT*it)
+            anims.append(
+                Transform(numbers[act][iss[act]], target)
+            )
+            equivalent_dice[act].append(it+1)
+            numbers_sorted.append(numbers[act][iss[act]])
+            iss[act] += 1
+        self.play(
+            AnimationGroup(
+                *anims,
+                lag_ratio = 0.3
+            )
+        )
+        self.wait()
+
+        #change numbers to letters
+        anims = []
+        lets = ["A", "B", "C"]
+        for i in range(3):
+            for j in range(6):
+                anims.append(
+                    Transform(
+                        numbers[i][j],
+                        Tex(lets[i], color = text_color).move_to(numbers[i][j].get_center())
                     )
-                    break
-        scene.play(
-            *anims,
-            run_time = 0.1
-        )
-    
-    def copy(self):
-        return FairString(self.str, self.letters[0])
-         
-    def animate_shift(self, scene, shft):
-        scene.play(
-            *[l.animate.shift(shft) for l in self.letters],
-            run_time = 0.1
-        )
+                )
 
-    def animate_shift_rescale(self, scene, shft, scale, sep):
-        for i in range(len(self.letters)):
-            self.letters[i].generate_target()
-            self.letters[i].target.scale(scale)
-            if i == 0:
-                self.letters[i].target.shift(shft)
+        self.play(
+            Succession(
+                AnimationGroup(
+                    *[FadeOut(lab) for lab in labels],
+                ),
+                AnimationGroup(
+                    *anims[0:6],
+                ),
+                AnimationGroup(
+                    *anims[6:12],
+                ),
+                AnimationGroup(
+                    *anims[12:18]
+                )
+            )
+        )
+        self.play(
+            Succession(
+                AnimationGroup(
+                    *[num.animate.shift((num.get_center()[1] - numbers[1][0].get_center()[1])*DOWN) for num in numbers[0]]
+                ),
+                AnimationGroup(
+                    *[num.animate.shift((num.get_center()[1] - numbers[1][0].get_center()[1])*DOWN) for num in numbers[2]]
+                ),
+            )
+        )
+        self.wait()
+
+        # align to the right, create equivalent dice to the left
+        for i in reversed(range(len(numbers_sorted))):
+            numbers_sorted[i].generate_target()
+            if i == 17:
+                numbers_sorted[i].target.move_to(6.9*RIGHT)
             else:
-                self.letters[i].target.move_to(self.letters[i-1].target.get_center() + sep * RIGHT)
+                numbers_sorted[i].target.next_to(numbers_sorted[i+1].target, LEFT).shift(0.15*RIGHT)
 
-        scene.play(
-            *[MoveToTarget(l) for l in self.letters],
-            run_time = 0.1
+
+        self.play(
+            *[MoveToTarget(num) for num in numbers_sorted]
         )
-    
-    def add(self, sp):
-        self.letters += sp.letters
-        self.str += sp.str
+        self.wait()
+
+        strs = ["{{A: }}", "{{B: }}", "{{C: }}"]
+        dice_labels = []
+        for i in range(3):
+            for j in range(6):
+                strs[i] += "{{" + str(equivalent_dice[i][j]) + "}}"
+                if j != 5:
+                    strs[i] += str("{{, }}")
+            dice_labels.append(Tex(strs[i], color = text_color))
+        dice_labels[1].next_to(Dot().move_to(7.1*LEFT), RIGHT)
+        dice_labels[0].align_to(dice_labels[1], LEFT).next_to(dice_labels[1], UP)
+        dice_labels[2].align_to(dice_labels[1], LEFT).next_to(dice_labels[1], DOWN)
+
+        lrarrow = Tex("$\longleftrightarrow$", color = text_color).shift(1.35*LEFT)
+        self.play(
+            *[FadeIn(lab) for lab in dice_labels],
+            FadeIn(lrarrow)
+        )
+        self.wait()
+
+        #only used at the end
+        smart_text = Tex(
+            r"like duality in linear programming, Fourier transform, generating functions, $\dots$", 
+            color = text_color
+            ).shift(3*DOWN).scale(0.7)
+        self.play(
+            FadeIn(smart_text)
+        )
+        self.wait()
+        self.play(
+            FadeOut(smart_text)
+        )
+        self.wait()
+
+        # highlighting one triplet
+        rec_highlights = [
+            Rectangle(color = RED, height = 0.5, width = 0.5).move_to(lab.get_center())
+            for lab in [dice_labels[0][5], dice_labels[1][11], dice_labels[2][1]]
+        ]
+        # above_note = Tex("$6^3 = 216$ possibilities", color = text_color).next_to(dice_labels[0], UP).shift(0.5*UP)
+        # self.play(
+        #     Create(above_note)
+        # )
+        # self.wait()
+
+        rec_highlights2 = [
+            Rectangle(color = RED, height = 0.5, width = 0.5).move_to(numbers_sorted[it].get_center())
+            for it in [8-1, 16-1, 3-1]            
+        ]
+        self.play(
+            Succession(
+                AnimationGroup(
+                    Create(rec_highlights[0]),
+                    Create(rec_highlights2[0]),
+                ),
+                AnimationGroup(
+                    Create(rec_highlights[1]),
+                    Create(rec_highlights2[1]),
+                ),
+                AnimationGroup(
+                    Create(rec_highlights[2]),
+                    Create(rec_highlights2[2]),
+                ),
+            )
+        )
+
+        self.wait()
+        
+        note = Tex(r"$\textrm{C} < \textrm{A} < \textrm{B}$", color = text_color).next_to(dice_labels[2], DOWN).shift(0.3*DOWN)
+        shft = 1*DOWN
+        AA = Tex("A", color = text_color).next_to(numbers_sorted[8-1], DOWN).shift(shft)
+        BB = Tex("B", color = text_color).next_to(numbers_sorted[16-1], DOWN).shift(shft)
+        CC = Tex("C", color = text_color).next_to(numbers_sorted[3-1], DOWN).shift(shft)
+        self.play(
+            FadeIn(note)
+        )
+        self.play(
+            AnimationGroup(
+                FadeIn(CC),
+                FadeIn(AA),
+                FadeIn(BB),
+                lag_ratio = 0.3
+            )
+        )
+        self.wait()
+
+        self.play(
+            #FadeOut(above_note),
+            *[FadeOut(rec) for rec in rec_highlights + rec_highlights2],
+            FadeOut(lrarrow),
+            *[FadeOut(str) for str in dice_labels],
+            FadeOut(note),
+            *[FadeOut(l) for l in [AA, BB, CC]],
+            *[num.animate.shift((numbers_sorted[0].get_center() + numbers_sorted[17].get_center())/2*LEFT+1*UP) for num in numbers_sorted]
+        )
+        self.wait()
 
 class Construction1(Scene):
     def construct(self):
@@ -349,15 +215,15 @@ class Construction1(Scene):
         s.write(self)
 
         if not skip:
-            s.create_buckets(
+            s.create_counters(
                 self, 
                 ["\#ABC", "\#ACB", "\#BAC", "\#BCA", "\#CAB", "\#CBA"],
                 [['A', 'B', 'C'], ['A', 'C', 'B'], ['B', 'A', 'C'], ['B', 'C', 'A'], ['C', 'A', 'B'], ['C', 'B', 'A']]
             )
             self.wait()
-            s.find_triplets(self, [0, 1, 2, 3, 4, 5])
+            s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=5, prob = 1e-4)
             self.wait()
-            s.delete_buckets(self)
+            s.delete_counters(self)
             self.wait()
 
         #It is always good to start with something concrete so let’s look at those six solutions we found for 6-sided dice and three players. 
@@ -444,15 +310,15 @@ class Construction1(Scene):
         skip = False
         self.next_section(skip_animations = skip)
         if not skip:
-            s.create_buckets(
+            s.create_counters(
                 self, 
                 ["\#ABC", "\#ACB", "\#BAC", "\#BCA", "\#CAB", "\#CBA"],
                 [['A', 'B', 'C'], ['A', 'C', 'B'], ['B', 'A', 'C'], ['B', 'C', 'A'], ['C', 'A', 'B'], ['C', 'B', 'A']]
             )
             self.wait()
-            s.find_triplets(self, [0, 1, 2, 3, 4, 5])
+            s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=5, prob = 1e-4)
             self.wait()
-            s.delete_buckets(self)
+            s.delete_counters(self)
             self.wait()
 
         self.wait()
@@ -464,7 +330,7 @@ class Construction1(Scene):
         skip = False
         self.next_section(skip_animations = skip)
         
-        s.create_buckets(
+        s.create_counters(
             self, 
             ["\#AB", "\#AC", "\#BA", "\#BC", "\#CA", "\#CB"],
             [['A', 'B'], ['A', 'C'], ['B', 'A'], ['B', 'C'], ['C', 'A'], ['C', 'B']]
@@ -570,21 +436,18 @@ class Construction1(Scene):
 
 class Construction2(Scene):
     def construct(self):
-        skip = True
+        skip = False
         self.next_section(skip_animations= skip)
         #But it turns out that this argument is quite general, so do you see how we can build a fair string this way? Well, here is how we can do it. First, we start with the triplet ABC. Then, we do this construction, where we write it six times, we create the six versions of it and concatenate them in an arbitrary order to get a new string. And then … well we just do it one more time!
         # [ABC, napíše se 6x pod sebe, propermutuje, zkonkatenuje, pak to samý]
 
         sc = 0.6
         base = FairString("ABC")
-        permutations = [
-            [],
-            [["A", "B"], ["B", "A"]],
-            [["A", "C"], ["C", "A"]],
-            [["C", "B"], ["B", "C"]],
-            [["A", "B"], ["B", "C"], ["C", "A"]],
-            [["A", "C"], ["C", "B"], ["B", "A"]],
-        ]
+        permutations = []
+        for perm in itertools.permutations(["A", "B", "C"]):
+            permutations.append(
+                [["A", perm[0]], ["B", perm[1]], ["C", perm[2]]]
+            )
 
         for it in range(2):
             parts = [base] + [base.copy() for i in range(5)]
@@ -605,11 +468,12 @@ class Construction2(Scene):
                 parts[i].write(self)
 
             # the triangle with A,B,C
-            rad = 0.75
-            
-            pA = Tex("A", color = text_color).shift(rad * (0.5 * DOWN + math.sqrt(3)/2 * LEFT))
-            pB = Tex("B", color = text_color).shift(rad * (0.5 * DOWN + math.sqrt(3)/2 * RIGHT))
-            pC = Tex("C", color = text_color).shift(rad * UP)
+            rad = 0.5
+
+            sc_lab = 0.7            
+            pA = Tex("A", color = text_color).scale(sc_lab).shift(rad * (0.5 * DOWN + math.sqrt(3)/2 * LEFT))
+            pB = Tex("B", color = text_color).scale(sc_lab).shift(rad * (0.5 * DOWN + math.sqrt(3)/2 * RIGHT))
+            pC = Tex("C", color = text_color).scale(sc_lab).shift(rad * UP)
 
             permutation_triangle = Group(pA, pB, pC).move_to(
                 parts[0].letters[0].get_center()
@@ -633,19 +497,19 @@ class Construction2(Scene):
                     ar_width = 1
                     arrows_to_create = Group()
                     if i == 1:
-                        arrows_to_create.add(DoubleArrow(start = pA.get_center(), end = pB.get_center(), color = text_color, stroke_width = ar_width))
-                    if i == 2:
-                        arrows_to_create.add(DoubleArrow(start = pA.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
-                    if i == 3:
                         arrows_to_create.add(DoubleArrow(start = pB.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
-                    if i == 4:
+                    if i == 2:
+                        arrows_to_create.add(DoubleArrow(start = pA.get_center(), end = pB.get_center(), color = text_color, stroke_width = ar_width))
+                    if i == 3:
                         arrows_to_create.add(Arrow(start = pA.get_center(), end = pB.get_center(), color = text_color, stroke_width = ar_width))
                         arrows_to_create.add(Arrow(start = pB.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
                         arrows_to_create.add(Arrow(start = pC.get_center(), end = pA.get_center(), color = text_color, stroke_width = ar_width))
-                    if i == 5:
+                    if i == 4:
                         arrows_to_create.add(Arrow(start = pA.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
                         arrows_to_create.add(Arrow(start = pC.get_center(), end = pB.get_center(), color = text_color, stroke_width = ar_width))
                         arrows_to_create.add(Arrow(start = pB.get_center(), end = pA.get_center(), color = text_color, stroke_width = ar_width))
+                    if i == 5:
+                        arrows_to_create.add(DoubleArrow(start = pA.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
 
                     self.play(
                         *[FadeIn(arrow) for arrow in arrows_to_create]                
@@ -700,9 +564,9 @@ class Construction2(Scene):
         # [udělá se jeden dlouhý string (asi na dvě řádky) a pak výpočet]
         # Nice, it works. 
 
-        skip = True
+        skip = False
         self.next_section(skip_animations= skip)
-        base.create_buckets(
+        base.create_counters(
             self, 
             ["\#ABC", "\#ACB", "\#BAC", "\#BCA", "\#CAB", "\#CBA"],
             [['A', 'B', 'C'], ['A', 'C', 'B'], ['B', 'A', 'C'], ['B', 'C', 'A'], ['C', 'A', 'B'], ['C', 'B', 'A']]
@@ -754,8 +618,7 @@ class Construction2(Scene):
         )
 
         self.play(
-            Circumscribe(Group(base.counters[i], base.counter_titles[i])),
-            #Circumscribe(Group(base.counters[j], base.counter_titles[j])),
+            Circumscribe(Group(base.counters[i], base.counter_titles[i]), color = RED),
         )
 
         self.play(
@@ -774,18 +637,18 @@ class Construction2(Scene):
 
 
 
-        self.next_section(skip_animations= True)
+        self.next_section(skip_animations= False)
 
         self.play(
-            Circumscribe(Group(overscore1, overtext1, parts[i].letters[0], parts[i].letters[len(parts[i].letters)-1]))
+            Circumscribe(Group(overscore1, overtext1, parts[i].letters[0], parts[i].letters[len(parts[i].letters)-1]), color = RED)
         ) 
         self.wait()
         self.play(
-            Circumscribe(Group(overscore2, overtext2, parts[j].letters[0], parts[j].letters[len(parts[j].letters)-1]))
+            Circumscribe(Group(overscore2, overtext2, parts[j].letters[0], parts[j].letters[len(parts[j].letters)-1]), color = RED)
         ) 
         self.wait()
 
-        #But look, the six parts of our string already have the same counts of ABs and CAs and of course the same counts of C as B. So the contribution to the bucket with ABC is the same as to the bucket with CAB.  
+        #But look, the six parts of our string already have the same counts of ABs and CAs and of course the same counts of C as B. So the contribution to the counter with ABC is the same as to the counter with CAB.  
         #[napíše se #AB=#CA, #C=#B, pak ten samý výpočet pro CAB, rovnice se nahradí CA, B]
 
         self.play(
@@ -808,7 +671,7 @@ class Construction2(Scene):
         self.wait()
 
 
-        #You can also consider the contributions like A coming from this part, B from this part, and C from this part. But again, the contribution to the bucket with ABCs is the same as the contribution to the bucket with CAB. 
+        #You can also consider the contributions like A coming from this part, B from this part, and C from this part. But again, the contribution to the counter with ABCs is the same as the contribution to the counter with CAB. 
         #[to samý]
 
         self.play(
@@ -826,7 +689,7 @@ class Construction2(Scene):
         i = 0
         j = 1
         k = 5
-        self.next_section(skip_animations= True)
+        self.next_section(skip_animations= False)
 
         overscore1 = Line(
             start = parts[i].letters[0].get_center() + over_shift*sc,
@@ -897,6 +760,13 @@ class Construction2(Scene):
 
 
         self.play(
+            Transform(overtext1, Tex("\#A = \#C", color = text_color).move_to(overtext1.get_center())),
+            Transform(overtext2, Tex("\#B = \#A", color = text_color).move_to(overtext2.get_center())),
+            Transform(overtext3, Tex("\#C = \#B", color = text_color).move_to(overtext3.get_center())),
+        )
+        self.wait()
+
+        self.play(
             Transform(overtext1, Tex("C", color = text_color).move_to(overtext1.get_center())),
             Transform(overtext2, Tex("A", color = text_color).move_to(overtext2.get_center())),
             Transform(overtext3, Tex("B", color = text_color).move_to(overtext3.get_center())),
@@ -917,7 +787,7 @@ class Construction2(Scene):
 
         #base.clear_counters(self)
 
-        # The only contributions that are different are those where all ABCs are coming from the same bucket. There are … from the first bucket, then it is … 
+        # The only contributions that are different are those where all ABCs are coming from the same counter. There are … from the first counter, then it is … 
         # [nové county pro každou část]
         # But if you look at the CAB contributions, these are the same six numbers just in a different order, which follows from the fact that the six strings are really just six permuted versions of the same thing. 
         #[zase to samý pro CAB, je vidět že to sou stejný čísla]
@@ -1094,19 +964,20 @@ class ConstructABCD(Scene):
             parts[i].animated_permute(self,permutations[i], scale = sc2)
         self.wait()
 
-        parts2 = []
+        #treti iterace
+        base = FairString("")
         for i in range(24):
-            parts2.append(parts[i].copy())
-        for i in range(16):
-            if i == 0:
-                parts2[i].letters[0].move_to(parts[23].letters[0].get_center()).shift(0.2*DOWN)    
-            else:
-                parts2[i].letters[0].move_to(parts2[i-1].letters[0].get_center()).shift(0.2*DOWN)
-            parts2[i].write(self, center = False, scale = sc2)
+            base.add(parts[i])
 
-        for i in range(16):
-            parts2[i].animated_permute(self,permutations[1], scale = sc2)
-
+        base2 = base.copy()
+        for l, l2 in zip(base.letters, base2.letters):
+            l2.scale(sc2).move_to(l.get_center()).shift(parts[23].letters[0].get_center() - parts[0].letters[0].get_center() + 0.3*DOWN)
+        self.play(
+            *[FadeIn(l) for l in base2.letters]
+        )
+        self.wait()
+        base2.animated_permute(self, permutations[1], scale = sc2)        
+        self.wait()
         return
 
         for i in range(24):
@@ -1140,20 +1011,13 @@ class ConstructABCD(Scene):
             parts[i].animated_permute(self,permutations[i], scale = sc2)
         self.wait()
 
-
-
-        
-        # self.play(
-        #     *[FadeOut(obj) for obj in self.mobjects]
-        # )
-        # self.wait()
-
 class Scrolling(Scene):
     def construct(self):
         sc = 0.35
         
         #TODO change
-        L = 1
+        L = 50
+        #L = 1
         up_shift = 3*UP
         test = 0
         
@@ -1195,11 +1059,14 @@ class Scrolling(Scene):
                 ),
                 Succession(
                     Wait(2),
-                    Write(Tex("55296 letters", color = text_color).shift(2*UP).set_z_index(100))
+                    Write(Tex("55296 letters: ", color = DARK_GRAY).shift(2*UP).set_z_index(100).scale(2))
                 ),
                 Succession(
                     Wait(4),
-                    Write(Tex(fair_strings4[0], color = text_color).set_z_index(100))
+                    AnimationGroup(
+                        Write(Tex(list_to_string(four_dice), color = BLUE).shift(3*DOWN).scale(0.8).set_z_index(100)),
+                        Write(Tex("48 letters: ", color = BLUE).shift(2*DOWN).set_z_index(100))
+                    )
                 ),
             )
         )
@@ -1227,3 +1094,4 @@ class Scrolling(Scene):
         # )
         
         self.wait()
+
