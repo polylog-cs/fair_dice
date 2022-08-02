@@ -50,7 +50,7 @@ four_dice = [
     [2, 5, 12, 15, 19, 22, 27, 30, 34, 37, 44, 47],
 ]
 
-colors = [GREEN, TEAL, BLUE, VIOLET, MAGENTA, RED, ORANGE] # TODO restrict to 6 colors
+colors = [GREEN, CYAN, BLUE, VIOLET, MAGENTA, RED, ORANGE] # TODO restrict to 6 colors
 text_color = GRAY
 background_color = config.background_color
 

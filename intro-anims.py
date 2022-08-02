@@ -275,47 +275,92 @@ class DiceSquare(Scene):
 pos_three_dice = 3*UP
 class DiceCubeLeft(ThreeDScene):
     def construct(self):
-        self.set_camera_orientation(phi = 45*DEGREES, theta = -45*DEGREES)
-        axes = ThreeDAxes(x_range = [0, 5, 1], y_range = [0, 5, 1], z_range = [0, 5, 1]).add_coordinates()
-        #self.add(axes)
-        base = Cube(side_length = 1).move_to(ORIGIN)
+        self.set_camera_orientation(
+            phi = 70*DEGREES,  # pitch
+            theta = -120*DEGREES,  # yaw
+        )
+        self.begin_ambient_camera_rotation(
+            rate = PI/10,
+            about = "theta"
+        )
+
+        self.move_camera(
+            frame_center=np.array([0, 0, 2]),
+            run_time=0.1,
+            zoom=0.7,
+        )
+
+        n = 6
+        nexts = [
+            (LEFT + IN) * 0.5,
+            (DOWN + IN) * 0.5,
+            (LEFT + DOWN) * 0.5,
+        ]
+        dirs = [UP, RIGHT, OUT]
+        global_shift = (n - 1) / 2 * (LEFT + DOWN)
+        
+        axes = ThreeDAxes(
+            x_range=(0, n, 1), x_length=n,
+            y_range=(0, n, 1), y_length=n,
+            z_range=(0, n, 1), z_length=n,
+        ).shift((dirs[0] + dirs[1]) * (n - 1) / 2 - dirs[2] * 0.5 + global_shift)
+        
+        axes.set_color(text_color)
+        self.add(axes)
+        base = Cube(side_length = 1, fill_color=BLACK).move_to(ORIGIN).shift(global_shift)
+
         # self.add(
         #     base,
-        #     Cube(side_length = 1, fill_color = RED).move_to(ORIGIN).shift(1*LEFT),
-        #     Cube(side_length = 1, fill_color = BLUE).move_to(ORIGIN).shift(1*UP),
-        #     Cube(side_length = 1, fill_color = GREEN).move_to(ORIGIN).shift(1*OUT)
+        #     Cube(side_length = 1, fill_color = RED).move_to(ORIGIN).shift(dirs[0]),
+        #     Cube(side_length = 1, fill_color = GREEN).move_to(ORIGIN).shift(dirs[1]),
+        #     Cube(side_length = 1, fill_color = BLUE).move_to(ORIGIN).shift(dirs[2]),
         # )
 
         labels = []
-        nexts = [RIGHT, DOWN, RIGHT + DOWN + OUT]
-        dirs = [UP, LEFT, OUT]
+        
         for i in range(3):
             labels.append([])
             for j in range(len(dice[i])):
-                l = Tex(str(dice[i][j]), color = text_color)
-                if i == 1:
-                    l.rotate_about_origin(90*DEGREES,OUT)
-                if i == 2:
-                    l.rotate_about_origin(45*DEGREES, OUT).rotate_about_origin(90*DEGREES, RIGHT-DOWN)
+                l = Tex(
+                    str(dice[i][j]) if j < len(dice[i]) else "ABC"[i],
+                    # color = [RED, GREEN, BLUE][i],
+                    color=text_color,
+                ).scale(0.8)
+                # if i == 1:
+                #     l.rotate_about_origin(90*DEGREES,OUT)
+                # if i == 2:
+                #     l.rotate_about_origin(45*DEGREES, OUT).rotate_about_origin(90*DEGREES, RIGHT-DOWN)
                 
+                # labels[i].append(l.move_to(base.get_center()).shift(DOWN + LEFT + IN).shift(dirs[i] * (j + 1)))
+                # continue
                 if j == 0:
                     labels[i].append(
-                        l.move_to(base.get_center()).next_to(base, nexts[i]).shift(0.5*nexts[i])
+                        l.shift(nexts[i] + 0.5*nexts[i] + global_shift)
+                        # l.move_to(base.get_center())
                     )   
                 else:
                     labels[i].append(
                         l.move_to(labels[i][j-1].get_center() + dirs[i])
                     )
-        self.add(
+            
+            l = Tex(
+                "ABC"[i],
+                color=text_color,
+            )
+
+            labels[i].append(
+                l.move_to(labels[i][-1].get_center() + dirs[i] * 2)
+            )
+
+
+
+        self.add_fixed_orientation_mobjects(
             *labels[0],
             *labels[1],
-            *labels[2]
+            *labels[2],
         )
 
-        self.begin_ambient_camera_rotation(
-            rate = PI/10,
-            about = "theta"
-        )
+        all_cubes = []
 
         for it, perm in enumerate(itertools.permutations([0, 1, 2])):
             cubes_to_appear = []            
@@ -328,22 +373,45 @@ class DiceCubeLeft(ThreeDScene):
                             cubes_to_appear.append(
                                 Cube(
                                     side_length=1,
-                                    fill_color = colors[it]
-                                ).move_to(ORIGIN).shift(i*dirs[0]+j*dirs[1]+k*dirs[2])
+                                    fill_color = colors[it],
+                                    fill_opacity=1.0,
+                                ).move_to(ORIGIN).shift(i*dirs[0]+j*dirs[1]+k*dirs[2] + global_shift)
                             )
+            
+            all_cubes += cubes_to_appear
+
             if cubes_to_appear != []:
+                letters = ["ABC"[p] for p in perm]
+                order_label = Tex(
+                    f"${letters[0]} < {letters[1]} < {letters[2]}$",
+                    color=colors[it],
+                ).shift(5*RIGHT + 3 * UP)
+                self.add_fixed_in_frame_mobjects(order_label)
+
                 self.play(
                     *[FadeIn(cube) for cube in cubes_to_appear],
+                    FadeIn(order_label),
                     run_time = 0.5
                 )
                 self.wait(1.5)
                 self.play(
                     *[FadeOut(cube) for cube in cubes_to_appear],
+                    FadeOut(order_label),
                     run_time = 0.5
                 )
                 self.wait()
 
-        self.stop_ambient_camera_rotation()
+        self.play(*[FadeIn(cube) for cube in all_cubes])
+        self.wait(1)
+        calculation_text = Tex(r"$\frac{6^3}{3!} = 36$", color=BASE2).scale(2)
+        self.add_fixed_in_frame_mobjects(calculation_text)
+        self.play(FadeIn(calculation_text))
+        self.wait(5)
+        
+        # self.stop_ambient_camera_rotation()
+        # self.play(*[FadeOut(cube) for cube in all_cubes])
+        # self.move_camera(phi=90*DEGREES, theta=0)
+        # self.wait(1)
 
 class DiceCubeRight(Scene):
     def construct(self):
