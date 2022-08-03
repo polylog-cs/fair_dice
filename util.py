@@ -95,7 +95,7 @@ def list_to_lines(l, pos = 0*LEFT, scale = 1, commas = True):
         for j in range(len(die)):
             s += r"{{" + str(die[j]) + r"}}"
             if j != len(die)-1:
-                if commas == True:
+                if commas:
                     s += r"{{, }}"
                 else:
                     s += r"{{ }}"
@@ -107,6 +107,20 @@ def list_to_lines(l, pos = 0*LEFT, scale = 1, commas = True):
         else:
             lines[i].next_to(lines[i-1], DOWN).align_to(lines[i-1], LEFT)
     return lines
+
+
+def dice_table(l, scale = 1):
+    objects = []
+    for i, die in enumerate(l):
+        objects.append(r"{{" + string.ascii_uppercase[i] + r": }}")
+        for j in range(len(die)):
+            objects.append(r"{{" + str(die[j]) + r"}}")
+
+    group = VGroup(*[Tex(s, color=text_color).scale(scale) for s in objects])
+    group.arrange_in_grid(rows=len(l), cell_alignment=RIGHT, buff=MED_SMALL_BUFF*scale)
+
+    return group
+
 
 def rotate(vec, angle):
     return [
