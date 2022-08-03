@@ -202,7 +202,7 @@ class FairString(FairBase):
         self.counters = []
         self.counter_titles = []
 
-    def find_pairs(self, scene, match_set, ranges = [None, None], highlight_color = None):
+    def find_pairs(self, scene, match_set, ranges = [None, None], highlight_color = None, flying_color = text_color):
         underscore1 = Line(start = -0.1*RIGHT + under_shift, end = 0.1*RIGHT + under_shift, color = text_color)
         underscore2 = underscore1.copy()
         #anims = []
@@ -234,8 +234,9 @@ class FairString(FairBase):
                                     run_time = 0.1
                                 )
                             )
-                        flying_letter1 = self.letters[i].copy()
-                        flying_letter2 = self.letters[j].copy()
+                        flying_letter1 = self.letters[i].copy().set_color(flying_color)
+                        flying_letter2 = self.letters[j].copy().set_color(flying_color)
+
                         end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
                         anims = [
                             self.counters[mi].animate.increment_value(1),
@@ -267,7 +268,7 @@ class FairString(FairBase):
             )
         return cleanup_anims
 
-    def find_triplets(self, scene, match_set, ranges = [None, None, None], scale = 1, cheap_after_steps = None, prob = 1):
+    def find_triplets(self, scene, match_set, ranges = [None, None, None], scale = 1, cheap_after_steps = None, prob = 1, flying_color = text_color):
         underscore1 = Line(start = -0.1*RIGHT + under_shift, end = 0.1*RIGHT + under_shift, color = text_color)
         underscore2 = underscore1.copy()
         underscore3 = underscore1.copy()
@@ -307,9 +308,9 @@ class FairString(FairBase):
                                             run_time = 0.1
                                         )
                                     )
-                                flying_letter1 = self.letters[i].copy()
-                                flying_letter2 = self.letters[j].copy()
-                                flying_letter3 = self.letters[k].copy()
+                                flying_letter1 = self.letters[i].copy().set_color(flying_color)
+                                flying_letter2 = self.letters[j].copy().set_color(flying_color)
+                                flying_letter3 = self.letters[k].copy().set_color(flying_color)
                                 end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
                                 scene.play(
                                     AnimationGroup(
@@ -337,9 +338,9 @@ class FairString(FairBase):
                                             run_time = 0.1
                                         )
                                     )
-                                    flying_letter1 = self.letters[i].copy()
-                                    flying_letter2 = self.letters[j].copy()
-                                    flying_letter3 = self.letters[k].copy()
+                                    flying_letter1 = self.letters[i].copy().set_color(flying_color)
+                                    flying_letter2 = self.letters[j].copy().set_color(flying_color)
+                                    flying_letter3 = self.letters[k].copy().set_color(flying_color)
                                     end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
                                     scene.play(
                                         AnimationGroup(

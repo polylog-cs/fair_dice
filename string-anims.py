@@ -5,12 +5,13 @@ from util import *
 
 class Equivalence(Scene):
     def construct(self):
+        sc = 0.9
         for i in range(3):
             three_dice[i].append(99)
         labels = [
-            Tex("A:", color = text_color),
-            Tex("B:", color = text_color),
-            Tex("C:", color = text_color),
+            Tex("A:", color = text_color).scale(sc),
+            Tex("B:", color = text_color).scale(sc),
+            Tex("C:", color = text_color).scale(sc),
         ]
         labels[1].shift(5*LEFT)
         labels[0].move_to(labels[1].get_center()).next_to(labels[1], UP)
@@ -21,10 +22,10 @@ class Equivalence(Scene):
             numbers.append([])
             for j in range(6):
                 numbers[i].append(
-                    Tex(three_dice[i][j], color = text_color)
+                    Tex(three_dice[i][j], color = text_color).scale(sc)
                 )
                 if j == 0:
-                    numbers[i][j].next_to(labels[i], RIGHT).shift(3*RIGHT)
+                    numbers[i][j].next_to(labels[i], RIGHT).shift(3.5*RIGHT)
                 else:
                     numbers[i][j].next_to(numbers[i][j-1], RIGHT).shift(0.3*RIGHT)
         
@@ -40,7 +41,7 @@ class Equivalence(Scene):
         for it in range(18):
             act_vals = [three_dice[0][iss[0]], three_dice[1][iss[1]], three_dice[2][iss[2]]]
             act = act_vals.index(min(*act_vals))
-            target = Tex(str(it+1), color = text_color).next_to(labels[act], RIGHT).shift(0.55*RIGHT*it)
+            target = Tex(str(it+1), color = text_color).scale(sc).next_to(labels[act], RIGHT).shift(0.6*RIGHT*it)
             anims.append(
                 Transform(numbers[act][iss[act]], target)
             )
@@ -73,14 +74,11 @@ class Equivalence(Scene):
                     *[FadeOut(lab) for lab in labels],
                 ),
                 AnimationGroup(
-                    *anims[0:6],
+                    AnimationGroup(*anims[0:6]),
+                    AnimationGroup(*anims[6:12]),
+                    AnimationGroup(*anims[12:18]),
+                    lag_ratio = 0.5
                 ),
-                AnimationGroup(
-                    *anims[6:12],
-                ),
-                AnimationGroup(
-                    *anims[12:18]
-                )
             )
         )
         self.play(
@@ -348,19 +346,30 @@ class Construction1(Scene):
         skip = False
         self.next_section(skip_animations = skip)
         
+        self.play(
+            s.counters[0].animate.set_color(RED),
+            s.counter_titles[0].animate.set_color(RED),
+        )
+        self.wait()
+        self.play(
+            s.counters[4].animate.set_color(BLUE),
+            s.counter_titles[4].animate.set_color(BLUE),
+        )
+        self.wait()
+
         overscore1 = Line(start = -0.5*RIGHT + over_shift, end = 0.5*RIGHT + over_shift, color = text_color)
         overscore2 = overscore1.copy()
         overscore1.move_to(s.letters[1].get_center() + over_shift)
         overscore2.move_to(s.letters[1+3].get_center() + over_shift)
-        overletter1 = Tex("A", color = text_color).move_to(overscore1.get_center()).next_to(overscore1, UP)
-        overletter2 = Tex("B", color = text_color).move_to(overscore2.get_center()).next_to(overscore2, UP)
+        overletter1 = Tex("A", color = RED).move_to(overscore1.get_center()).next_to(overscore1, UP)
+        overletter2 = Tex("B", color = RED).move_to(overscore2.get_center()).next_to(overscore2, UP)
         
-        for ind in [0, 4]:
+        for ind, col in [(0, RED), (4, BLUE)]:
             if ind == 4:
                 overscore1.move_to(s.letters[1].get_center() + over_shift)
                 overscore2.move_to(s.letters[1+3].get_center() + over_shift)
-                overletter1 = Tex("C", color = text_color).move_to(overscore1.get_center()).next_to(overscore1, UP)
-                overletter2 = Tex("A", color = text_color).move_to(overscore2.get_center()).next_to(overscore2, UP)
+                overletter1 = Tex("C", color = BLUE).move_to(overscore1.get_center()).next_to(overscore1, UP)
+                overletter2 = Tex("A", color = BLUE).move_to(overscore2.get_center()).next_to(overscore2, UP)
                 
             #pairs from different parts
             self.next_section(skip_animations = False)
@@ -388,7 +397,7 @@ class Construction1(Scene):
                                 run_time = 0.1
                             )
                         )
-                    s.find_pairs(self,[ind],[[3*i, 3*i+3], [3*j, 3*j+3]])
+                    s.find_pairs(self,[ind],[[3*i, 3*i+3], [3*j, 3*j+3]], flying_color = col)
             self.play(
                 FadeOut(overscore1),
                 FadeOut(overscore2),
@@ -402,9 +411,9 @@ class Construction1(Scene):
 
             self.next_section(skip_animations=False)
             overscore1.move_to(s.letters[1].get_center() + over_shift)
-            overletter1 = Tex("AB", color = text_color).move_to(overscore1.get_center()).next_to(overscore1, UP)
+            overletter1 = Tex("AB", color = RED).move_to(overscore1.get_center()).next_to(overscore1, UP)
             if ind == 4:
-                overletter1 = Tex("CA", color = text_color).move_to(overscore1.get_center()).next_to(overscore1, UP)
+                overletter1 = Tex("CA", color = BLUE).move_to(overscore1.get_center()).next_to(overscore1, UP)
             cleanup_anims = []
 
             for i in range(0, 6):
@@ -419,7 +428,7 @@ class Construction1(Scene):
                         overletter1.animate.shift(shft)
                     )
 
-                cleanup_anims += s.find_pairs(self, [ind], [[3*i, 3*i+3], [3*i, 3*i+3]], highlight_color = RED)
+                cleanup_anims += s.find_pairs(self, [ind], [[3*i, 3*i+3], [3*i, 3*i+3]], highlight_color = col, flying_color = col)
 
             #print(cleanup_anims)
             self.play(
@@ -595,7 +604,7 @@ class Construction2(Scene):
         )
         overtext1 = Tex(
             "AB",
-            color = text_color
+            color = RED
         ).move_to(
             overscore1.get_center()
         ).next_to(
@@ -610,7 +619,7 @@ class Construction2(Scene):
         )
         overtext2 = Tex(
             "C",
-            color = text_color
+            color = RED
         ).move_to(
             overscore2.get_center()
         ).next_to(
@@ -619,7 +628,8 @@ class Construction2(Scene):
         )
 
         self.play(
-            Circumscribe(Group(base.counters[0], base.counter_titles[0]), color = RED),
+            base.counters[0].animate.set_color(RED), 
+            base.counter_titles[0].animate.set_color(RED)
         )
 
         self.play(
@@ -633,7 +643,7 @@ class Construction2(Scene):
             FadeIn(overtext2),
         )
 
-        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2)
+        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2, flying_color = RED)
         self.wait()       
 
 
@@ -652,28 +662,57 @@ class Construction2(Scene):
         #But look, the six parts of our string already have the same counts of ABs and CAs and of course the same counts of C as B. So the contribution to the counter with ABC is the same as to the counter with CAB.  
         #[napíše se #AB=#CA, #C=#B, pak ten samý výpočet pro CAB, rovnice se nahradí CA, B]
 
+        newAB = Tex("{{\#AB}}{{ = }}{{\#CA}}", color = text_color).move_to(overtext1.get_center())
+        newAB[0].set_color(RED)
+        newAB[2].set_color(BLUE)
+        newC = Tex("{{\#C}}{{ = }}{{\#B}}", color = text_color).move_to(overtext2.get_center())
+        newC[0].set_color(RED)
+        newC[2].set_color(BLUE)
+        
+
         self.play(
-            Transform(overtext1, Tex("\#AB = \#CA", color = text_color).move_to(overtext1.get_center())),
+            Transform(overtext1, newAB),
         )
         self.wait()
 
         self.play(
-            Transform(overtext2, Tex("\#C = \#B", color = text_color).move_to(overtext2.get_center())),
+            Transform(overtext2, newC),
+        )
+        self.wait()
+        self.play(
+            base.counters[4].animate.set_color(BLUE),
+            base.counter_titles[4].animate.set_color(BLUE)
         )
         self.wait()
 
         self.play(
-            Circumscribe(Group(base.counters[4], base.counter_titles[4]), color = RED),
+            Circumscribe(Group(base.counters[4], base.counter_titles[4]), color = BLUE),
         )
 
+        # self.play(
+        #     Transform(overtext1, Tex("CA", color = text_color).move_to(overtext1.get_center())),
+        #     Transform(overtext2, Tex("B", color = text_color).move_to(overtext2.get_center())),
+        # )
+        # self.wait()
+
+        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2, flying_color = BLUE)
+        self.wait()
+
+
+        # posunout AB o jedna doleva
+        shft = (parts[0].letters[0].get_center() + over_shift*sc + parts[0].letters[17].get_center() + over_shift * sc )/2 - overscore1.get_center()
         self.play(
-            Transform(overtext1, Tex("CA", color = text_color).move_to(overtext1.get_center())),
-            Transform(overtext2, Tex("B", color = text_color).move_to(overtext2.get_center())),
+            overscore1.animate.shift(shft),
+            overtext1.animate.shift(shft)
         )
         self.wait()
 
-        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2)
-        self.wait()
+
+
+
+
+
+
 
 
         #You can also consider the contributions like A coming from this part, B from this part, and C from this part. But again, the contribution to the counter with ABCs is the same as the contribution to the counter with CAB. 
@@ -703,7 +742,7 @@ class Construction2(Scene):
         )
         overtext1 = Tex(
             "A",
-            color = text_color
+            color = RED
         ).move_to(
             overscore1.get_center()
         ).next_to(
@@ -718,7 +757,7 @@ class Construction2(Scene):
         )
         overtext2 = Tex(
             "B",
-            color = text_color
+            color = RED
         ).move_to(
             overscore2.get_center()
         ).next_to(
@@ -733,7 +772,7 @@ class Construction2(Scene):
         )
         overtext3 = Tex(
             "C",
-            color = text_color
+            color = RED
         ).move_to(
             overscore3.get_center()
         ).next_to(
@@ -760,25 +799,31 @@ class Construction2(Scene):
         self.wait()
 
 
-        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2)
+        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2, flying_color=RED)
         self.wait()
 
+        n1 = Tex("\#A = \#C", color = text_color).move_to(overtext1.get_center())
+        n2 = Tex("\#B = \#A", color = text_color).move_to(overtext2.get_center())
+        n3 = Tex("\#C = \#B", color = text_color).move_to(overtext3.get_center())
+        for n in [n1, n2, n3]:
+            n[0][0:2].set_color(RED)
+            n[0][3:].set_color(BLUE)
 
         self.play(
-            Transform(overtext1, Tex("\#A = \#C", color = text_color).move_to(overtext1.get_center())),
-            Transform(overtext2, Tex("\#B = \#A", color = text_color).move_to(overtext2.get_center())),
-            Transform(overtext3, Tex("\#C = \#B", color = text_color).move_to(overtext3.get_center())),
+            Transform(overtext1, n1),
+            Transform(overtext2, n2),
+            Transform(overtext3, n3),
         )
         self.wait()
 
-        self.play(
-            Transform(overtext1, Tex("C", color = text_color).move_to(overtext1.get_center())),
-            Transform(overtext2, Tex("A", color = text_color).move_to(overtext2.get_center())),
-            Transform(overtext3, Tex("B", color = text_color).move_to(overtext3.get_center())),
-        )
-        self.wait()
+        # self.play(
+        #     Transform(overtext1, Tex("C", color = text_color).move_to(overtext1.get_center())),
+        #     Transform(overtext2, Tex("A", color = text_color).move_to(overtext2.get_center())),
+        #     Transform(overtext3, Tex("B", color = text_color).move_to(overtext3.get_center())),
+        # )
+        # self.wait()
 
-        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2)
+        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2, flying_color = BLUE)
         self.wait()
 
         self.play(
@@ -806,7 +851,7 @@ class Construction2(Scene):
         )
         overtext1 = Tex(
             "ABC",
-            color = text_color
+            color = RED
         ).move_to(
             overscore1.get_center()
         ).next_to(
@@ -828,7 +873,7 @@ class Construction2(Scene):
                     overtext1.animate.shift(shft)
                 )
             partial_counters.append(
-                Integer(0, color = text_color).move_to(
+                Integer(0, color = RED).move_to(
                     parts[i].letters[0].get_center() + 0.5*UP
                 )
             )
@@ -841,12 +886,12 @@ class Construction2(Scene):
             self.play(
                 FadeIn(partial_counters[i])
             )
-            base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*i, 18*(i+1)]] , scale = sc, cheap_after_steps=3, prob = 1e-2)
+            base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*i, 18*(i+1)]] , scale = sc, cheap_after_steps=3, prob = 1e-2, flying_color=RED)
             self.wait()
             self.add(
                 Integer(
                     partial_counters[i].get_value(),
-                    color = text_color
+                    color = RED
                 ).move_to(partial_counters[i].get_center())
             )
             self.remove(partial_counters[i])
@@ -864,7 +909,7 @@ class Construction2(Scene):
         )
         overtext1 = Tex(
             "CAB",
-            color = text_color
+            color = BLUE
         ).move_to(
             overscore1.get_center()
         ).next_to(
@@ -886,7 +931,7 @@ class Construction2(Scene):
                     overtext1.animate.shift(shft)
                 )
             partial_counters.append(
-                Integer(0, color = text_color).move_to(
+                Integer(0, color = BLUE).move_to(
                     parts[i].letters[17].get_center() + 0.5*UP + 0.3*LEFT
                 )
             )
@@ -899,12 +944,12 @@ class Construction2(Scene):
             self.play(
                 FadeIn(partial_counters[i])
             )
-            base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*i, 18*(i+1)]] , scale = sc, cheap_after_steps=3, prob = 1e-2)
+            base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*i, 18*(i+1)]] , scale = sc, cheap_after_steps=3, prob = 1e-2, flying_color=BLUE)
             self.wait()
             self.add(
                 Integer(
                     partial_counters[i].get_value(),
-                    color = text_color
+                    color = BLUE
                 ).move_to(partial_counters[i].get_center())
             )
             self.remove(partial_counters[i])

@@ -163,6 +163,45 @@ class DiceSquare(Scene):
         AlB = Tex(r"$A< B$",color = RED).next_to(vertical_lines[-1], RIGHT).shift(1*RIGHT+0.5*UP)
         AgB = Tex(r"$A> B$",color = BLUE).next_to(vertical_lines[-1], RIGHT).shift(1*RIGHT+0.5*DOWN)
 
+
+        # first just two examples
+        sqab = squares[0][4]
+        sqba = squares[3][1]
+        txtab = Tex(r"$A<B$", color = DARK_GRAY).scale(0.5).move_to(sqab.get_center())
+        txtba = Tex(r"$A>B$", color = DARK_GRAY).scale(0.5).move_to(sqba.get_center())
+
+        self.play(
+            AnimationGroup(
+                FadeIn(sqab),
+                FadeIn(txtab),
+            )
+        )
+        self.play(
+            Circumscribe(dice_numbers[0][0], color = RED),
+        )
+        self.play(
+            Circumscribe(dice_numbers[1][4], color = RED)
+        )
+        self.wait()
+
+        self.play(
+            FadeIn(sqba),
+            FadeIn(txtba)
+        )
+        self.play(
+            Circumscribe(dice_numbers[1][1], color = BLUE),
+        )
+        self.play(
+            Circumscribe(dice_numbers[0][3], color = BLUE)
+        )
+        self.wait()
+
+        self.play(
+            FadeOut(txtab),
+            FadeOut(txtba),
+            FadeOut(sqab),
+            FadeOut(sqba)
+        )
         self.play(
             *[FadeIn(square) for line in squares for square in line],
             FadeIn(AlB),
@@ -413,6 +452,10 @@ class FairExamples(Scene):
         )
         self.wait()
         self.play(
+            Circumscribe(Group(*(fair_dice[0]), color = RED))
+        )
+        self.wait()
+        self.play(
             *[FadeOut(str) for lines in fair_dice for str in lines],
             #*[str.animate.shift(4.5*RIGHT) for str in fair_dice[0]]
         )
@@ -477,7 +520,7 @@ class FairExamples(Scene):
 
         tdiv = Tex(r"{{$5!$}}{{$\mid$}}{{$ s^5$}}", color = text_color).next_to(t2, DOWN)
         tdiv2 = Tex(r"{{$5\cdot 4 \cdot 3 \cdot 2$}}{{$\mid$}}{{$ s^5$}}", color = text_color).move_to(tdiv.get_center())
-        t4 = Tex(r"$2, 3, 5 \mid s$", color = text_color).next_to(tdiv2, DOWN).shift(0.5*DOWN)
+        t4 = Tex(r"{{$2, 3, 5$}}{{ }}{{$ \mid s$}}", color = text_color).next_to(tdiv2, DOWN).shift(0.5*DOWN)
         t5 = Tex(r"{{$s \ge $}}{{$\,2 \cdot 3 \cdot 5$}}", color = text_color).next_to(t4, DOWN)
         t52= Tex(r"{{$s \ge $}}{{$\,30$}}", color = text_color).move_to(t5.get_center())
 
@@ -510,6 +553,31 @@ class FairExamples(Scene):
         )
         self.wait()
 
+
+
+        #to same pro sedm
+
+        ttl7 = Tex(r"{{seven }}{{s}}{{-sided dic}}{{e}}", color = text_color).move_to(ttl2.get_center())
+        t17 = Tex(r"{{$s^7$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center())
+        t27 = Tex(r"{{$7!$ }}{{equally-sized groups}}", color = text_color).move_to(t2.get_center())
+        t37 = Tex(r"{{$\frac{s^7}{7!}$}}{{ outcomes per group}}", color = text_color).move_to(t3.get_center())
+
+        tdiv7 = Tex(r"{{$7 \cdot 6 \cdot 5\cdot 4 \cdot 3 \cdot 2$}}{{$\mid$}}{{$ s^7$}}", color = text_color).move_to(tdiv.get_center())
+        t47 = Tex(r"{{$2, 3, 5$}}{{$, 7 $}}{{$\mid s$}}", color = text_color).next_to(tdiv2, DOWN).shift(0.5*DOWN)
+        t57= Tex(r"{{$s \ge $}}{{$\,210$}}", color = text_color).move_to(t5.get_center())
+
+        self.play(
+            AnimationGroup(
+                Transform(ttl, ttl7),
+                Transform(t1, t17),
+                Transform(t2, t27),
+                Transform(t3, t37),
+                Transform(t4, t47),
+                Transform(t5, t57),
+                lag_ratio = 0.3,
+            )
+        )
+        self.wait()
 
         #problik
         self.play(
@@ -552,148 +620,6 @@ class FairExamples(Scene):
 
 
 
-        # self.play(
-        #     *[Unwrite(str[10]) for str in fair_dice[0]],
-        #     *[Unwrite(str[11]) for str in fair_dice[0]]
-        # )
-        # self.wait()
-        # #is there a solution?
-        
-
-        # #TODO pouzit neco co neni prvni dve reseni, at to nevypada podezrele
-        # str125 = Tex(r"{{$125$}}{{ possible outcomes}}", color = text_color).next_to(fair_dice[0][2], DOWN).shift(1.5*DOWN)
-        # self.play(
-        #     FadeIn(
-        #         str125
-        #     )
-        # )
-        # self.wait()
-        
-        # outcomes_str = [
-        #     "$A < B < C$",
-        #     "$A < C < B$",
-        #     "$B < A < C$",
-        #     "$B < C < A$",
-        #     "$C < A < B$",
-        #     "$C < B < A$",
-        # ]            
-
-        # outcomes = []
-        # for i in range(6):
-        #     outcomes.append(
-        #         Tex(outcomes_str[i], color = text_color).scale(0.75).move_to(5.7*LEFT + 3*DOWN + i*2.3*RIGHT)
-        #     )
-
-        # self.play(
-        #     *[FadeIn(out) for out in outcomes]
-        # )
-        # self.wait()
-
-        # six_parts = []
-        # for i in range(6):
-        #     beg = Tex(r"$125$", color = text_color).move_to(str125[0].get_center())
-        #     fin = Tex(r"$20.833\dots$", color = text_color).next_to(outcomes[i], UP).scale(0.7)
-        #     six_parts.append(
-        #         [beg, fin]
-        #     )
-        # self.play(
-        #     *[Transform(beg, fin) for [beg, fin] in six_parts]
-        # )
-        # self.wait()
-
-
-        # #change to five players
-        # dots = Tex(r"D: $\dots$", color = text_color).scale(sc).next_to(fair_dice[0][2], DOWN).align_to(fair_dice[0][2], LEFT)
-        # dots2 = Tex(r"E: $\dots$", color = text_color).scale(sc).next_to(dots, DOWN).align_to(dots, LEFT)
-        # dotsABC = [
-        #     Tex(r"$\dots$", color = text_color).scale(sc).next_to(line, RIGHT).shift(0.6*LEFT + 0.2*DOWN) for line in fair_dice[0]
-        # ]
-        # self.play(
-        #     Write(dots),
-        #     Write(dots2),
-        #     *[Write(d) for d in dotsABC]
-        # )
-        # self.wait()
-        # br = Brace(Group(fair_dice[0][0][1:], dotsABC[0]), UP, color = text_color)
-        # br_label = Tex(r"$s$ sides", color = text_color).next_to(br, UP)
-        # self.play(
-        #     FadeIn(br),
-        #     FadeIn(br_label)
-        # )
-        # self.wait()
-
-        # self.play(
-        #     Transform(str125[0], Tex(r"$s^5$", color = text_color).move_to(str125[0].get_center()))
-        # )
-        # self.wait()
-        # self.play(
-        #     *[FadeOut(o) for o in outcomes],
-        #     *[FadeOut(p) for [p, _] in six_parts]
-        # )
-        # self.wait()
-
-        # sc2 = 0.7
-        # p1 = Tex(r"$A < B < C < D < E$", color = text_color).scale(sc2)
-        # p2 = Tex(r"$A < B < C < E < D$", color = text_color).scale(sc2)
-        # pdots = Tex(r"$\dots$", color = text_color).scale(sc2)
-        # p3 = Tex(r"$E < D < C < B < A$", color = text_color).scale(sc2)
-
-        # p1.move_to(outcomes[0][0].get_center()).align_to(outcomes[0][0], LEFT)
-        # p2.next_to(p1, RIGHT).shift(0.3*RIGHT)
-        # p3.move_to(outcomes[5][0].get_center()).align_to(outcomes[5][0], RIGHT)
-        # pdots.move_to((p2.get_center() + p3.get_center())/2)
-
-        # self.play(
-        #     FadeIn(p1),
-        #     FadeIn(p2),
-        #     FadeIn(pdots),
-        #     FadeIn(p3),
-        # )
-        # self.wait()
-        # br2 = Brace(Group(p1, p3), UP, color = text_color)
-        # br2_label = Tex(r"{{$5!$}}{{ orders}}", color = text_color).next_to(br2, UP)
-        # self.play(
-        #     FadeIn(br2),
-        #     FadeIn(br2_label)
-        # )
-        # self.wait()
-
-        # md = Tex(r"$\mid$", color = text_color)
-        # self.play(
-        #     FadeOut(br2),
-        #     FadeOut(br2_label[1]),
-        #     FadeOut(p1),
-        #     FadeOut(p2),
-        #     FadeOut(pdots),
-        #     FadeOut(p3),
-        #     *[FadeOut(d) for d in dotsABC],
-        #     FadeOut(dots),
-        #     FadeOut(dots2),
-        #     FadeOut(fair_dice[0][0]),
-        #     FadeOut(fair_dice[0][1]),
-        #     FadeOut(fair_dice[0][2]),
-        #     FadeOut(br),
-        #     FadeOut(br_label),
-        #     FadeOut(str125[1]),
-        #     br2_label[0].animate.move_to(0.4*LEFT),
-        #     str125[0].animate.move_to(0.4*RIGHT),
-        #     FadeIn(md)
-        # )
-        # self.wait()
-        # eq = Tex(r"$2,3,5 \mid s$", color = text_color).next_to(md, DOWN).shift(0.5*LEFT)
-        # eq2 = Tex(r"$s \ge 30$", color = text_color).next_to(eq, DOWN).shift(0.5*RIGHT)
-        # self.play( 
-        #     FadeIn(eq)
-        # )
-        # self.wait()
-        # self.play(
-        #     FadeIn(eq2)
-        # )
-        # self.wait()
-        # self.next_section(skip_animations=False)
-
-
-
 class Counting(Scene):
     def construct(self):
         #copy pasted from above
@@ -728,10 +654,11 @@ class Counting(Scene):
 
         #computation 
 
+        sht = 0.1*LEFT
         comp = []
         comp.append(Tex("${18 \choose 6}$", color = text_color).move_to(3*LEFT + 3*DOWN))
-        comp.append(Tex("$\cdot {12 \choose 6}$", color = text_color).next_to(comp[0], RIGHT))
-        comp.append(Tex("$\cdot1$", color = text_color).next_to(comp[1], RIGHT))
+        comp.append(Tex("$\cdot {12 \choose 6}$", color = text_color).next_to(comp[0], RIGHT).shift(sht))
+        comp.append(Tex("$\cdot1$", color = text_color).next_to(comp[1], RIGHT).shift(sht))
         comp.append(Tex("$=  17\,153\,136$", color = text_color).next_to(comp[2], RIGHT))
 
         for i in range(3):
