@@ -138,6 +138,7 @@ class FairBase:
         positions = [(2*(i+0.5))*RIGHT + 2*DOWN for i in range(-3, 3)]
         self.counter_letters = counter_letters
 
+        anims = []
         for i, (name, pos) in enumerate(zip(counter_names, positions)):
             counter = Integer(
                     number = 0,
@@ -155,11 +156,14 @@ class FairBase:
             self.counters.append(counter)
             self.counter_titles.append(counter_title)
             
-
-            scene.play(
+            anims.append(AnimationGroup(
                 Write(counter),
-                Write(counter_title)
-            )
+                Write(counter_title),
+            ))
+
+        scene.play(
+            AnimationGroup(*anims, lag_ratio=0.15)
+        )
 
     def clear_counters(self, scene):
         scene.play(

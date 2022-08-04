@@ -3,7 +3,7 @@ from util import *
 class Polylog(Scene):
     def construct(self):
         authors = Tex(
-            r"\textbf{Tom Gavenčiak?, Václav Rozhoň, Václav Volhejn}", 
+            r"\textbf{Tom Gavenčiak, Václav Rozhoň, Václav Volhejn}", 
             color=text_color,
             font_size = 40,
         ).shift(
