@@ -3,7 +3,7 @@ from util import *
 class Polylog(Scene):
     def construct(self):
         authors = Tex(
-            r"\textbf{Tom Gavenčiak?, Václav Rozhoň, Václav Volhejn}", 
+            r"\textbf{Tom Gavenčiak, Václav Rozhoň, Václav Volhejn}", 
             color=text_color,
             font_size = 40,
         ).shift(
@@ -314,47 +314,92 @@ class DiceSquare(Scene):
 pos_three_dice = 3*UP
 class DiceCubeLeft(ThreeDScene):
     def construct(self):
-        self.set_camera_orientation(phi = 45*DEGREES, theta = -45*DEGREES)
-        axes = ThreeDAxes(x_range = [0, 5, 1], y_range = [0, 5, 1], z_range = [0, 5, 1]).add_coordinates()
-        #self.add(axes)
-        base = Cube(side_length = 1).move_to(ORIGIN)
+        self.set_camera_orientation(
+            phi = 70*DEGREES,  # pitch
+            theta = -120*DEGREES,  # yaw
+        )
+        self.begin_ambient_camera_rotation(
+            rate = PI/10,
+            about = "theta"
+        )
+
+        self.move_camera(
+            frame_center=np.array([0, 0, 2]),
+            run_time=0.1,
+            zoom=0.7,
+        )
+
+        n = 6
+        nexts = [
+            (LEFT + IN) * 0.5,
+            (DOWN + IN) * 0.5,
+            (LEFT + DOWN) * 0.5,
+        ]
+        dirs = [UP, RIGHT, OUT]
+        global_shift = (n - 1) / 2 * (LEFT + DOWN)
+        
+        axes = ThreeDAxes(
+            x_range=(0, n, 1), x_length=n,
+            y_range=(0, n, 1), y_length=n,
+            z_range=(0, n, 1), z_length=n,
+        ).shift((dirs[0] + dirs[1]) * (n - 1) / 2 - dirs[2] * 0.5 + global_shift)
+        
+        axes.set_color(text_color)
+        self.add(axes)
+        base = Cube(side_length = 1, fill_color=BLACK).move_to(ORIGIN).shift(global_shift)
+
         # self.add(
         #     base,
-        #     Cube(side_length = 1, fill_color = RED).move_to(ORIGIN).shift(1*LEFT),
-        #     Cube(side_length = 1, fill_color = BLUE).move_to(ORIGIN).shift(1*UP),
-        #     Cube(side_length = 1, fill_color = GREEN).move_to(ORIGIN).shift(1*OUT)
+        #     Cube(side_length = 1, fill_color = RED).move_to(ORIGIN).shift(dirs[0]),
+        #     Cube(side_length = 1, fill_color = GREEN).move_to(ORIGIN).shift(dirs[1]),
+        #     Cube(side_length = 1, fill_color = BLUE).move_to(ORIGIN).shift(dirs[2]),
         # )
 
         labels = []
-        nexts = [RIGHT, DOWN, RIGHT + DOWN + OUT]
-        dirs = [UP, LEFT, OUT]
+        
         for i in range(3):
             labels.append([])
             for j in range(len(dice[i])):
-                l = Tex(str(dice[i][j]), color = text_color)
-                if i == 1:
-                    l.rotate_about_origin(90*DEGREES,OUT)
-                if i == 2:
-                    l.rotate_about_origin(45*DEGREES, OUT).rotate_about_origin(90*DEGREES, RIGHT-DOWN)
+                l = Tex(
+                    str(dice[i][j]) if j < len(dice[i]) else "ABC"[i],
+                    # color = [RED, GREEN, BLUE][i],
+                    color=text_color,
+                ).scale(0.8)
+                # if i == 1:
+                #     l.rotate_about_origin(90*DEGREES,OUT)
+                # if i == 2:
+                #     l.rotate_about_origin(45*DEGREES, OUT).rotate_about_origin(90*DEGREES, RIGHT-DOWN)
                 
+                # labels[i].append(l.move_to(base.get_center()).shift(DOWN + LEFT + IN).shift(dirs[i] * (j + 1)))
+                # continue
                 if j == 0:
                     labels[i].append(
-                        l.move_to(base.get_center()).next_to(base, nexts[i]).shift(0.5*nexts[i])
+                        l.shift(nexts[i] + 0.5*nexts[i] + global_shift)
+                        # l.move_to(base.get_center())
                     )   
                 else:
                     labels[i].append(
                         l.move_to(labels[i][j-1].get_center() + dirs[i])
                     )
-        self.add(
+            
+            l = Tex(
+                "ABC"[i],
+                color=text_color,
+            )
+
+            labels[i].append(
+                l.move_to(labels[i][-1].get_center() + dirs[i] * 2)
+            )
+
+
+
+        self.add_fixed_orientation_mobjects(
             *labels[0],
             *labels[1],
-            *labels[2]
+            *labels[2],
         )
 
-        self.begin_ambient_camera_rotation(
-            rate = PI/10,
-            about = "theta"
-        )
+        all_cubes = []
 
         for it, perm in enumerate(itertools.permutations([0, 1, 2])):
             cubes_to_appear = []            
@@ -367,22 +412,47 @@ class DiceCubeLeft(ThreeDScene):
                             cubes_to_appear.append(
                                 Cube(
                                     side_length=1,
-                                    fill_color = colors[it]
-                                ).move_to(ORIGIN).shift(i*dirs[0]+j*dirs[1]+k*dirs[2])
+                                    fill_color = colors[it],
+                                    fill_opacity=1.0,
+                                ).move_to(ORIGIN).shift(i*dirs[0]+j*dirs[1]+k*dirs[2] + global_shift)
                             )
+            
+            all_cubes += cubes_to_appear
+
             if cubes_to_appear != []:
+                letters = ["ABC"[p] for p in perm]
+                order_label = Tex(
+                    f"${letters[0]} < {letters[1]} < {letters[2]}$",
+                    color=colors[it],
+                ).shift(5*RIGHT + 3 * UP)
+                self.add_fixed_in_frame_mobjects(order_label)
+
                 self.play(
                     *[FadeIn(cube) for cube in cubes_to_appear],
+                    FadeIn(order_label),
                     run_time = 0.5
                 )
-                self.wait(1.5)
+                self.wait(2.5)
                 self.play(
                     *[FadeOut(cube) for cube in cubes_to_appear],
+                    FadeOut(order_label),
                     run_time = 0.5
                 )
                 self.wait()
 
-        self.stop_ambient_camera_rotation()
+        self.play(*[FadeIn(cube) for cube in all_cubes])
+        self.wait(1)
+        calculation_text = Tex(r"$\frac{6^3}{3!} = 36$", color=BASE2).scale(2)
+        self.add_fixed_in_frame_mobjects(calculation_text)
+        self.play(FadeIn(calculation_text))
+        self.wait(5)
+        self.play(FadeOut(calculation_text))
+        self.wait(15)
+
+        # self.stop_ambient_camera_rotation()
+        # self.play(*[FadeOut(cube) for cube in all_cubes])
+        # self.move_camera(phi=90*DEGREES, theta=0)
+        # self.wait(1)
 
 class DiceCubeRight(Scene):
     def construct(self):
@@ -430,18 +500,25 @@ class FairExamples(Scene):
     def construct(self):
         self.next_section(skip_animations=False)
         fair_dice = []
-        sc = 0.7
+        sc = 0.9
+
+        tables = []
         for i, s in enumerate(fair_strings):
-            fair_dice.append(
-                list_to_lines(string_to_list(s), 4.5*LEFT + 2.5*UP + (i//3)*2.5*DOWN + (i%3)*4*RIGHT, scale = sc, commas = False)
-            )
+            table = dice_table(string_to_list(s), scale=sc)
+            table.shift(4.5*LEFT + 1.5*UP + (i//3)*3*DOWN + (i%3)*4*RIGHT)
+            tables.append(table)
+            # fair_dice.append(table)
+
+        tables = VGroup(*tables).arrange_in_grid(rows=2, buff=0.8).center()
 
         self.play(
-            AnimationGroup(
-                *[FadeIn(str) for lines in fair_dice for str in lines],
-            )
+            FadeIn(tables)
+            # AnimationGroup(
+            #     *[FadeIn(str) for lines in fair_dice for str in lines],
+            # )
         )
         self.wait()  
+
         msg = Tex("(up to permuting the dice or replacing each $x$ by $19-x$)", color = text_color).move_to(3.5*DOWN).scale(0.8)
         self.play(
             FadeIn(msg)
@@ -462,9 +539,9 @@ class FairExamples(Scene):
         self.wait()
 
         # solution for four dice
-        fair_dice4 = list_to_lines(four_dice,1*UP)
+        fair_dice4 = dice_table(four_dice, scale=1.3).center()
         self.play(
-            *[FadeIn(line) for line in fair_dice4]
+            FadeIn(fair_dice4)
         )
         self.wait()
 
@@ -473,8 +550,9 @@ class FairExamples(Scene):
         )
         self.wait()
 
-        ttl = Tex(r"{{three }}{{6}}{{-sided dic}}{{e}}", color = text_color).shift(2*UP)
-        ttl2 = Tex(r"{{three }}{{5}}{{-sided dic}}{{e??}}", color = text_color).shift(2*UP)
+        ttl = Tex(r"{{three }}{{6}}{{-sided dic}}{{e}}", color = text_color).scale(2)
+        ttl2 = Tex(r"{{three }}{{5}}{{-sided dic}}{{e??}}", color = text_color).scale(2)
+        ttl3 = Tex(r"{{three }}{{5}}{{-sided dic}}{{e??}}", color = text_color).shift(2*UP)
         self.play(
             FadeIn(ttl)
         )
@@ -483,8 +561,10 @@ class FairExamples(Scene):
             Transform(ttl, ttl2)
         )
         self.wait()
+        self.play(Transform(ttl, ttl3))
+        self.wait()
 
-        t1 = Tex("{{$5^3$}}{{ possible outcomes}}", color = text_color).next_to(ttl2, DOWN).shift(DOWN)
+        t1 = Tex("{{$5^3$}}{{ possible outcomes}}", color = text_color).next_to(ttl3, DOWN).shift(DOWN)
         t1new = Tex("{{$125$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center())
         t2 = Tex("{{6 }}{{equally-sized groups}}", color = text_color).next_to(t1, DOWN)
         t3 = Tex(r"{{$\frac{125}{6}$}}{{ outcomes per group}}", color = text_color).next_to(t2, DOWN)
@@ -513,7 +593,7 @@ class FairExamples(Scene):
         )
         self.wait()
 
-        ttl5 = Tex(r"{{five }}{{s}}{{-sided dic}}{{e}}", color = text_color).move_to(ttl2.get_center())
+        ttl5 = Tex(r"{{five }}{{s}}{{-sided dic}}{{e}}", color = text_color).move_to(ttl3.get_center())
         t15 = Tex(r"{{$s^5$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center())
         t25 = Tex(r"{{$5!$ }}{{equally-sized groups}}", color = text_color).move_to(t2.get_center())
         t35 = Tex(r"{{$\frac{s^5}{5!}$}}{{ outcomes per group}}", color = text_color).move_to(t3.get_center())

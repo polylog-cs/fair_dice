@@ -97,7 +97,7 @@ class Equivalence(Scene):
         for i in reversed(range(len(numbers_sorted))):
             numbers_sorted[i].generate_target()
             if i == 17:
-                numbers_sorted[i].target.move_to(6.9*RIGHT)
+                numbers_sorted[i].target.move_to(6.5*RIGHT)
             else:
                 numbers_sorted[i].target.next_to(numbers_sorted[i+1].target, LEFT).shift(0.15*RIGHT)
 
@@ -113,13 +113,13 @@ class Equivalence(Scene):
             for j in range(6):
                 strs[i] += "{{" + str(equivalent_dice[i][j]) + "}}"
                 if j != 5:
-                    strs[i] += str("{{, }}")
+                    strs[i] += str("{{ }}")
             dice_labels.append(Tex(strs[i], color = text_color))
-        dice_labels[1].next_to(Dot().move_to(7.1*LEFT), RIGHT)
+        dice_labels[1].next_to(Dot().move_to(6.5*LEFT), RIGHT)
         dice_labels[0].align_to(dice_labels[1], LEFT).next_to(dice_labels[1], UP)
         dice_labels[2].align_to(dice_labels[1], LEFT).next_to(dice_labels[1], DOWN)
 
-        lrarrow = Tex("$\longleftrightarrow$", color = text_color).shift(1.35*LEFT)
+        lrarrow = Tex("$\longleftrightarrow$", color = text_color).shift(1.4*LEFT)
         self.play(
             *[FadeIn(lab) for lab in dice_labels],
             FadeIn(lrarrow)
@@ -158,16 +158,16 @@ class Equivalence(Scene):
         self.play(
             Succession(
                 AnimationGroup(
+                    Create(rec_highlights[2]),
+                    Create(rec_highlights2[2]),
+                ),
+                AnimationGroup(
                     Create(rec_highlights[0]),
                     Create(rec_highlights2[0]),
                 ),
                 AnimationGroup(
                     Create(rec_highlights[1]),
                     Create(rec_highlights2[1]),
-                ),
-                AnimationGroup(
-                    Create(rec_highlights[2]),
-                    Create(rec_highlights2[2]),
                 ),
             )
         )
@@ -335,6 +335,7 @@ class Construction1(Scene):
         )
         if not skip:
             s.find_pairs(self, [0, 1, 2, 3, 4, 5])
+            self.wait()
             s.clear_counters(self)
             self.wait()
 
@@ -436,6 +437,7 @@ class Construction1(Scene):
                 FadeOut(overletter1),
                 *cleanup_anims
             )
+            self.wait()
         
         # In general, we can see that it does not matter how you order the six triplets, you will always get the same counts of ABs, BCs, and ACs. 
         # [zase se přehází string, pak znovu celý výpočet]
@@ -573,6 +575,7 @@ class Construction2(Scene):
         # So, we take this string of 18 letters and write all six versions of it with permuted letters. By that I mean, that first we just write this string six times. We leave the first string as it is. Then we swap all As and Bs. Then, we swap all As and Cs. Then Bs and Cs, then, we change A for B, B for C, C for A, and finally A for C, C for B, B for A. OK, now take all those strings and concatenate them, in an arbitrary order. We get this beauty. Ufff. Ok, I claim that this is a fair string. Let’s compute the counts of all six possible triplets in it… 
         # [udělá se jeden dlouhý string (asi na dvě řádky) a pak výpočet]
         # Nice, it works. 
+        self.wait()
 
         skip = False
         self.next_section(skip_animations= skip)
@@ -1105,14 +1108,14 @@ class Scrolling(Scene):
             AnimationGroup(
                 AnimationGroup(
                     *[l.animate.shift(up_shift) for l in all_letters],
-                    run_time = 16
+                    run_time = 25
                 ),
                 Succession(
                     Wait(2),
                     Write(Tex("55296 letters: ", color = DARK_GRAY).shift(2*UP).set_z_index(100).scale(2))
                 ),
                 Succession(
-                    Wait(4),
+                    Wait(12),
                     AnimationGroup(
                         Write(Tex(list_to_string(four_dice), color = DARK_GRAY).shift(3*DOWN).scale(0.8).set_z_index(100)),
                         Write(Tex("48 letters: ", color = DARK_GRAY).shift(2*DOWN).scale(2).set_z_index(100))

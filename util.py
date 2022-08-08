@@ -50,7 +50,7 @@ four_dice = [
     [2, 5, 12, 15, 19, 22, 27, 30, 34, 37, 44, 47],
 ]
 
-colors = [GREEN, TEAL, BLUE, VIOLET, MAGENTA, RED, ORANGE] # TODO restrict to 6 colors
+colors = [GREEN, CYAN, BLUE, VIOLET, MAGENTA, RED, ORANGE] # TODO restrict to 6 colors
 text_color = GRAY
 background_color = config.background_color
 
@@ -95,7 +95,7 @@ def list_to_lines(l, pos = 0*LEFT, scale = 1, commas = True):
         for j in range(len(die)):
             s += r"{{" + str(die[j]) + r"}}"
             if j != len(die)-1:
-                if commas == True:
+                if commas:
                     s += r"{{, }}"
                 else:
                     s += r"{{ }}"
@@ -107,6 +107,20 @@ def list_to_lines(l, pos = 0*LEFT, scale = 1, commas = True):
         else:
             lines[i].next_to(lines[i-1], DOWN).align_to(lines[i-1], LEFT)
     return lines
+
+
+def dice_table(l, scale = 1):
+    objects = []
+    for i, die in enumerate(l):
+        objects.append(r"{{" + string.ascii_uppercase[i] + r": }}")
+        for j in range(len(die)):
+            objects.append(r"{{" + str(die[j]) + r"}}")
+
+    group = VGroup(*[Tex(s, color=text_color).scale(scale) for s in objects])
+    group.arrange_in_grid(rows=len(l), cell_alignment=RIGHT, buff=MED_SMALL_BUFF*scale)
+
+    return group
+
 
 def rotate(vec, angle):
     return [
@@ -124,6 +138,7 @@ class FairBase:
         positions = [(2*(i+0.5))*RIGHT + 2*DOWN for i in range(-3, 3)]
         self.counter_letters = counter_letters
 
+        anims = []
         for i, (name, pos) in enumerate(zip(counter_names, positions)):
             counter = Integer(
                     number = 0,
@@ -141,11 +156,14 @@ class FairBase:
             self.counters.append(counter)
             self.counter_titles.append(counter_title)
             
-
-            scene.play(
+            anims.append(AnimationGroup(
                 Write(counter),
-                Write(counter_title)
-            )
+                Write(counter_title),
+            ))
+
+        scene.play(
+            AnimationGroup(*anims, lag_ratio=0.15)
+        )
 
     def clear_counters(self, scene):
         scene.play(

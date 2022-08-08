@@ -95,15 +95,16 @@ class Thanks(Scene):
     def construct(self):
         s = [
             "Big thanks to",
-            "organizers of SoME2,",
+            "the organizers of SoME2,",
             "Manim Community,",
-            "Bernhard \& ??? Haeupler, Hanka Rozhoňová"
+            "Bernhard Haeupler, Hanka Rozhoňová,",
+            "Vojtěch Volhejn, Tung Anh Vu",
         ]
         t = [
             Tex(ss, color = text_color) for ss in s
         ]
-        for i in range(3, len(t)):
-            t[i].scale(0.7)
+        # for i in range(3, len(t)):
+        #     t[i].scale(0.7)
         t[0].move_to(2*LEFT + 2*UP)
         for i in range(1, len(t)):
             t[i].next_to(t[i-1], DOWN).align_to(t[i-1], LEFT)
