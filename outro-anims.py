@@ -1,6 +1,18 @@
 from util import *
 
-
+class FinalThoughts(Scene):
+    def construct(self):
+        txt = Tex("Final Thoughts", color = text_color).scale(2)
+        self.add_sound("audio/gong.wav")
+        self.play(
+            FadeIn(txt)
+        )
+        self.wait()
+        self.play(
+            FadeOut(txt)
+        )
+        self.wait(3)
+ 
 class Outro(Scene):
     def construct(self):
         permutations = []

@@ -109,7 +109,7 @@ def list_to_lines(l, pos = 0*LEFT, scale = 1, commas = True):
     return lines
 
 
-def dice_table(l, scale = 1):
+def dice_table(l, scale = 1, col_widths = None):
     objects = []
     for i, die in enumerate(l):
         objects.append(r"{{" + string.ascii_uppercase[i] + r": }}")
@@ -117,7 +117,7 @@ def dice_table(l, scale = 1):
             objects.append(r"{{" + str(die[j]) + r"}}")
 
     group = VGroup(*[Tex(s, color=text_color).scale(scale) for s in objects])
-    group.arrange_in_grid(rows=len(l), cell_alignment=RIGHT, buff=MED_SMALL_BUFF*scale)
+    group.arrange_in_grid(rows=len(l), cell_alignment=RIGHT, buff=MED_SMALL_BUFF*scale, col_widths = col_widths, col_alignments="c"*(len(l[0])+1))
 
     return group
 
@@ -209,7 +209,7 @@ class FairString(FairBase):
             AnimationGroup(
                 *[FadeIn(l) for l in self.letters],
             ),
-            run_time = 0.1
+            run_time = 1
         )
 
     def create_from_list_of_letters(self, letters):
@@ -266,10 +266,13 @@ class FairString(FairBase):
                                 self.letters[i].animate.set_color(highlight_color),
                                 self.letters[j].animate.set_color(highlight_color)
                             ]
+                        scene.add_sound(
+                            f"audio/bfs/bfs_{mi:03d}"
+                        )
                         scene.play(
                             AnimationGroup(
                                 *anims,
-                                run_time = 1
+                                run_time = 0.5
                             )
                         )
                         if highlight_color != None:
@@ -286,7 +289,7 @@ class FairString(FairBase):
             )
         return cleanup_anims
 
-    def find_triplets(self, scene, match_set, ranges = [None, None, None], scale = 1, cheap_after_steps = None, prob = 1, flying_color = text_color):
+    def find_triplets(self, scene, match_set, ranges = [None, None, None], scale = 1, cheap_after_steps = None, skip_factor = 1, flying_color = text_color):
         underscore1 = Line(start = -0.1*RIGHT + under_shift, end = 0.1*RIGHT + under_shift, color = text_color)
         underscore2 = underscore1.copy()
         underscore3 = underscore1.copy()
@@ -295,6 +298,7 @@ class FairString(FairBase):
         if ranges[0] == None:
             ranges = [[0, len(self.str)], [0, len(self.str)], [0, len(self.str)]]
         cnt = 0
+        skip_cnt = 0
         fst_cheap = True
         counter_changes_to_do = [0] * len(self.counters)
 
@@ -330,13 +334,16 @@ class FairString(FairBase):
                                 flying_letter2 = self.letters[j].copy().set_color(flying_color)
                                 flying_letter3 = self.letters[k].copy().set_color(flying_color)
                                 end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
+                                scene.add_sound(
+                                    f"audio/bfs/bfs_{mi:03d}"
+                                )       
                                 scene.play(
                                     AnimationGroup(
                                         self.counters[mi].animate.increment_value(1),
                                         Transform(flying_letter1, end_dot),
                                         Transform(flying_letter2, end_dot),
                                         Transform(flying_letter3, end_dot),
-                                        run_time = 1
+                                        run_time = 0.5
                                     )
                                 )
                             else: #cheap steps, only with probability prob
@@ -347,7 +354,9 @@ class FairString(FairBase):
                                 #         Uncreate(underscore3)
                                 #     )
                                 counter_changes_to_do[mi] += 1
-                                if random.random() < prob:
+                                skip_cnt += 1
+                                if skip_cnt == skip_factor:
+                                    skip_cnt = 0
                                     scene.play(
                                         AnimationGroup(
                                             underscore1.animate.move_to(self.letters[i].get_center() + under_shift * scale),
@@ -360,13 +369,16 @@ class FairString(FairBase):
                                     flying_letter2 = self.letters[j].copy().set_color(flying_color)
                                     flying_letter3 = self.letters[k].copy().set_color(flying_color)
                                     end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
+                                    scene.add_sound(
+                                        f"audio/bfs/bfs_{mi:03d}"
+                                    )
                                     scene.play(
                                         AnimationGroup(
                                             *[self.counters[it].animate.increment_value(counter_changes_to_do[it]) for it in range(len(self.counters))],
                                             Transform(flying_letter1, end_dot),
                                             Transform(flying_letter2, end_dot),
                                             Transform(flying_letter3, end_dot),
-                                            run_time = 1
+                                            run_time = 0.5
                                         )
                                     )
                                     counter_changes_to_do = [0]*len(self.counters)
@@ -418,7 +430,7 @@ class FairString(FairBase):
                     break
         scene.play(
             *anims,
-            run_time = 0.1
+            run_time = 1
         )
     
     def copy(self):

@@ -5,6 +5,17 @@ from util import *
 
 class Equivalence(Scene):
     def construct(self):
+        txt = Tex("General Construction", color = text_color).scale(2.5)
+        self.add_sound("audio/gong.wav")
+        self.play(
+            FadeIn(txt)
+        )
+        self.wait(2)
+        self.play(
+            FadeOut(txt)
+        )
+        self.wait(3)
+
         sc = 0.9
         for i in range(3):
             three_dice[i].append(99)
@@ -13,7 +24,7 @@ class Equivalence(Scene):
             Tex("B:", color = text_color).scale(sc),
             Tex("C:", color = text_color).scale(sc),
         ]
-        labels[1].shift(5*LEFT)
+        labels[1].shift(5.5*LEFT)
         labels[0].move_to(labels[1].get_center()).next_to(labels[1], UP)
         labels[2].move_to(labels[1].get_center()).next_to(labels[1], DOWN)
 
@@ -41,7 +52,7 @@ class Equivalence(Scene):
         for it in range(18):
             act_vals = [three_dice[0][iss[0]], three_dice[1][iss[1]], three_dice[2][iss[2]]]
             act = act_vals.index(min(*act_vals))
-            target = Tex(str(it+1), color = text_color).scale(sc).next_to(labels[act], RIGHT).shift(0.6*RIGHT*it)
+            target = Tex(str(it+1), color = text_color).scale(sc).move_to(labels[act].get_center()).shift(0.6*RIGHT*it+0.5*RIGHT)
             anims.append(
                 Transform(numbers[act][iss[act]], target)
             )
@@ -119,7 +130,7 @@ class Equivalence(Scene):
         dice_labels[0].align_to(dice_labels[1], LEFT).next_to(dice_labels[1], UP)
         dice_labels[2].align_to(dice_labels[1], LEFT).next_to(dice_labels[1], DOWN)
 
-        lrarrow = Tex("$\longleftrightarrow$", color = text_color).shift(1.4*LEFT)
+        lrarrow = Tex("$\longleftrightarrow$", color = text_color).shift(1.6*LEFT)
         self.play(
             *[FadeIn(lab) for lab in dice_labels],
             FadeIn(lrarrow)
@@ -134,7 +145,7 @@ class Equivalence(Scene):
         self.play(
             FadeIn(smart_text)
         )
-        self.wait()
+        self.wait(2)
         self.play(
             FadeOut(smart_text)
         )
@@ -199,7 +210,7 @@ class Equivalence(Scene):
             *[FadeOut(str) for str in dice_labels],
             FadeOut(note),
             *[FadeOut(l) for l in [AA, BB, CC]],
-            *[num.animate.shift((numbers_sorted[0].get_center() + numbers_sorted[17].get_center())/2*LEFT+1*UP) for num in numbers_sorted]
+            *[num.animate.shift((numbers_sorted[0].get_center() + numbers_sorted[17].get_center())/2 *LEFT) for num in numbers_sorted]
         )
         self.wait()
 
@@ -212,6 +223,7 @@ class Construction1(Scene):
         s = FairString("ABCBCACABCBAACBBAC")
         s.write(self)
 
+
         if not skip:
             s.create_counters(
                 self, 
@@ -219,8 +231,11 @@ class Construction1(Scene):
                 [['A', 'B', 'C'], ['A', 'C', 'B'], ['B', 'A', 'C'], ['B', 'C', 'A'], ['C', 'A', 'B'], ['C', 'B', 'A']]
             )
             self.wait()
-            s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=5, prob = 1e-4)
+            s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=7, skip_factor=6)
             self.wait()
+            self.play(
+                *[Circumscribe(counter, color = RED) for counter in s.counters]
+            )
             s.delete_counters(self)
             self.wait()
 
@@ -314,7 +329,7 @@ class Construction1(Scene):
                 [['A', 'B', 'C'], ['A', 'C', 'B'], ['B', 'A', 'C'], ['B', 'C', 'A'], ['C', 'A', 'B'], ['C', 'B', 'A']]
             )
             self.wait()
-            s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=5, prob = 1e-4)
+            s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=7, skip_factor=6)
             self.wait()
             s.delete_counters(self)
             self.wait()
@@ -438,7 +453,28 @@ class Construction1(Scene):
                 *cleanup_anims
             )
             self.wait()
+
+        red_letters = [3, 4, 10, 11, 15, 17]
+        blue_letters = [7, 8, 9, 10, 12, 14]
+        self.play(
+            *[s.letters[pos].animate.set_color(RED) for pos in red_letters]
+        )
+        self.wait()
+        self.play(
+            *[s.letters[pos].animate.set_color(text_color) for pos in red_letters]
+        )
+        self.wait()
         
+        self.play(
+            *[s.letters[pos].animate.set_color(BLUE) for pos in blue_letters]
+        )
+        self.wait()
+        self.play(
+            *[s.letters[pos].animate.set_color(text_color) for pos in blue_letters]
+        )
+        self.wait()
+        
+
         # In general, we can see that it does not matter how you order the six triplets, you will always get the same counts of ABs, BCs, and ACs. 
         # [zase se přehází string, pak znovu celý výpočet]
 
@@ -586,7 +622,7 @@ class Construction2(Scene):
         )
 
         self.wait()
-        base.find_triplets(self, [0, 1, 2, 3, 4, 5], scale = sc, cheap_after_steps=2, prob = 1e-4)
+        base.find_triplets(self, [0, 1, 2, 3, 4, 5], scale = sc, cheap_after_steps=5, skip_factor=2000)
         self.wait()
         base.clear_counters(self)
         self.wait()
@@ -597,6 +633,17 @@ class Construction2(Scene):
         # [mezi částmi se udělá mezera, pak výpočet kde nad nadčárami je AB a C]
         # Their number is just the product of the number of ABs here and the number of Cs here. 
         # [circumbscribe the two parts]
+
+        self.play(
+            base.counters[0].animate.set_color(RED), 
+            base.counter_titles[0].animate.set_color(RED)
+        )
+        self.wait()
+        self.play(
+            base.counters[4].animate.set_color(BLUE), 
+            base.counter_titles[4].animate.set_color(BLUE)
+        )
+        self.wait()
 
         i = 1
         j = 2
@@ -646,7 +693,7 @@ class Construction2(Scene):
             FadeIn(overtext2),
         )
 
-        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2, flying_color = RED)
+        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 15, flying_color = RED)
         self.wait()       
 
 
@@ -698,7 +745,7 @@ class Construction2(Scene):
         # )
         # self.wait()
 
-        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2, flying_color = BLUE)
+        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 15, flying_color = BLUE)
         self.wait()
 
 
@@ -802,7 +849,7 @@ class Construction2(Scene):
         self.wait()
 
 
-        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2, flying_color=RED)
+        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 60, flying_color=RED)
         self.wait()
 
         n1 = Tex("\#A = \#C", color = text_color).move_to(overtext1.get_center())
@@ -826,7 +873,7 @@ class Construction2(Scene):
         # )
         # self.wait()
 
-        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=2, prob = 1e-2, flying_color = BLUE)
+        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 60, flying_color = BLUE)
         self.wait()
 
         self.play(
@@ -889,7 +936,7 @@ class Construction2(Scene):
             self.play(
                 FadeIn(partial_counters[i])
             )
-            base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*i, 18*(i+1)]] , scale = sc, cheap_after_steps=3, prob = 1e-2, flying_color=RED)
+            base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*i, 18*(i+1)]] , scale = sc, cheap_after_steps=3, skip_factor = 7, flying_color=RED)
             self.wait()
             self.add(
                 Integer(
@@ -947,7 +994,7 @@ class Construction2(Scene):
             self.play(
                 FadeIn(partial_counters[i])
             )
-            base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*i, 18*(i+1)]] , scale = sc, cheap_after_steps=3, prob = 1e-2, flying_color=BLUE)
+            base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*i, 18*(i+1)]] , scale = sc, cheap_after_steps=3, skip_factor = 7, flying_color=BLUE)
             self.wait()
             self.add(
                 Integer(
@@ -1070,7 +1117,7 @@ class Scrolling(Scene):
         
         #TODO change
         L = 50
-        #L = 1
+        L = 1
         up_shift = 3*UP
         test = 0
         
@@ -1112,13 +1159,14 @@ class Scrolling(Scene):
                 ),
                 Succession(
                     Wait(2),
-                    Write(Tex("55296 letters: ", color = DARK_GRAY).shift(2*UP).set_z_index(100).scale(2))
+                    Write(Tex(r"$55296$ letters ", color = DARK_GRAY).shift(2*UP).set_z_index(100).scale(2)),
+                    Write(Tex(r"$= 4 \times 13824$ sides: ", color = DARK_GRAY).shift(1*UP).set_z_index(100).scale(2))
                 ),
                 Succession(
                     Wait(12),
                     AnimationGroup(
-                        Write(Tex(list_to_string(four_dice), color = DARK_GRAY).shift(3*DOWN).scale(0.8).set_z_index(100)),
-                        Write(Tex("48 letters: ", color = DARK_GRAY).shift(2*DOWN).scale(2).set_z_index(100))
+                        Write(Tex(list_to_string(four_dice), color = BLACK).shift(3*DOWN).scale(0.8).set_z_index(100)),
+                        Write(Tex(r"$48$ letters = $4 \times 12$ sides: ", color = BLACK).shift(2*DOWN).scale(1.8).set_z_index(100))
                     )
                 ),
             )
