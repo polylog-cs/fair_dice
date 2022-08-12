@@ -203,6 +203,9 @@ class Equivalence(Scene):
         )
         self.wait()
 
+        s = FairString("ABCBCACABCBAACBBAC")
+        s.write(self, do = False)
+
         self.play(
             #FadeOut(above_note),
             *[FadeOut(rec) for rec in rec_highlights + rec_highlights2],
@@ -210,7 +213,7 @@ class Equivalence(Scene):
             *[FadeOut(str) for str in dice_labels],
             FadeOut(note),
             *[FadeOut(l) for l in [AA, BB, CC]],
-            *[num.animate.shift((numbers_sorted[0].get_center() + numbers_sorted[17].get_center())/2 *LEFT) for num in numbers_sorted]
+            *[num.animate.move_to(lett.get_center()) for num, lett in zip(numbers_sorted, s.letters)]
         )
         self.wait()
 
@@ -359,7 +362,6 @@ class Construction1(Scene):
         # There are two types of AB pairs. First, there are those where A is in one of the six short parts of the string and B is in another one. Whenever you take two different parts, they will generate exactly one AB pair. 
         # [nahoře ve stringu se udělají mezery mezi částmi, pak se udělá první výpočet, na nadčárami je napsáno A a B]
 
-        skip = False
         self.next_section(skip_animations = skip)
         
         self.play(
@@ -388,7 +390,7 @@ class Construction1(Scene):
                 overletter2 = Tex("A", color = BLUE).move_to(overscore2.get_center()).next_to(overscore2, UP)
                 
             #pairs from different parts
-            self.next_section(skip_animations = False)
+            self.next_section(skip_animations = skip)
             for i in range(0, 6):
                 for j in range(i+1, 6):
                     if i == 0 and j == 1:
@@ -413,7 +415,8 @@ class Construction1(Scene):
                                 run_time = 0.1
                             )
                         )
-                    s.find_pairs(self,[ind],[[3*i, 3*i+3], [3*j, 3*j+3]], flying_color = col)
+                    if not skip:
+                        s.find_pairs(self,[ind],[[3*i, 3*i+3], [3*j, 3*j+3]], flying_color = col)
             self.play(
                 FadeOut(overscore1),
                 FadeOut(overscore2),
@@ -425,7 +428,7 @@ class Construction1(Scene):
             #But if we now look at the counts of CAs, we see that, yet again, every two parts generate just one. And then there are again three CAs that are fully in one part. The parts that give us AB are not the same as those that give us CA, but it does not really matter. It is kind of clear that if there are in total three ABs generated inside one part, there have to be the same number of CAs generated inside one part, because in the end the parts are just six permuted versions of the same thing, so they cannot favor AB over CA. 
             #[to samé pro CA]
 
-            self.next_section(skip_animations=False)
+            self.next_section(skip_animations=skip)
             overscore1.move_to(s.letters[1].get_center() + over_shift)
             overletter1 = Tex("AB", color = RED).move_to(overscore1.get_center()).next_to(overscore1, UP)
             if ind == 4:
@@ -477,9 +480,24 @@ class Construction1(Scene):
 
         # In general, we can see that it does not matter how you order the six triplets, you will always get the same counts of ABs, BCs, and ACs. 
         # [zase se přehází string, pak znovu celý výpočet]
-
-
+        self.next_section(skip_animations = skip)
+        ps = [
+            [4, 3, 1, 2, 5, 0],
+            [2, 3, 0, 4, 5, 1],
+        ]
+        
+        for p in ps:
+            anims = []
+            for i in range(len(s.letters)):
+                anims.append(
+                    s.letters[i].animate.move_to(
+                        s.letters[3*p[i//3] + (i%3)].get_center()
+                    )
+                )
+            self.play(*anims)
+            self.wait()
         self.wait(10)
+        
 
 class Construction2(Scene):
     def construct(self):
@@ -588,7 +606,7 @@ class Construction2(Scene):
                         parts[i].animate_shift_rescale(
                             self,
                             parts[0].letters[0].get_center()
-                            + 0.5 * DOWN
+                            + 1.5 * DOWN
                             - parts[i].letters[0].get_center(),
                             sc,
                             default_sep * sc
@@ -622,11 +640,13 @@ class Construction2(Scene):
         )
 
         self.wait()
-        base.find_triplets(self, [0, 1, 2, 3, 4, 5], scale = sc, cheap_after_steps=5, skip_factor=2000)
+        if not skip:
+            base.find_triplets(self, [0, 1, 2, 3, 4, 5], scale = sc, cheap_after_steps=5, skip_factor=2000)
         self.wait()
         base.clear_counters(self)
         self.wait()
         
+        self.next_section(skip_animations=False)
         #So why is it so? Well, it is basically the same argument as before. 
         # [vyresetují se countery]
         # Let’s look for example on the counts of ABC and CAB. First, there are a lot of contributions to the count of ABC such that for example AB is from this part and C is from that part. 
@@ -634,6 +654,7 @@ class Construction2(Scene):
         # Their number is just the product of the number of ABs here and the number of Cs here. 
         # [circumbscribe the two parts]
 
+        # first some examples of how it can look like
         self.play(
             base.counters[0].animate.set_color(RED), 
             base.counter_titles[0].animate.set_color(RED)
@@ -644,147 +665,15 @@ class Construction2(Scene):
             base.counter_titles[4].animate.set_color(BLUE)
         )
         self.wait()
-
-        i = 1
-        j = 2
-        overscore1 = Line(
-            start = parts[i].letters[0].get_center() + over_shift*sc,
-            end = parts[i].letters[len(parts[i].letters) - 1].get_center() + over_shift * sc,
-            color = text_color
-        )
-        overtext1 = Tex(
-            "AB",
-            color = RED
-        ).move_to(
-            overscore1.get_center()
-        ).next_to(
-            overscore1,
-            UP
-        )
-
-        overscore2 = Line(
-            start = parts[j].letters[0].get_center() + over_shift*sc,
-            end = parts[j].letters[len(parts[j].letters) - 1].get_center() + over_shift * sc,
-            color = text_color
-        )
-        overtext2 = Tex(
-            "C",
-            color = RED
-        ).move_to(
-            overscore2.get_center()
-        ).next_to(
-            overscore2,
-            UP
-        )
-
         self.play(
-            base.counters[0].animate.set_color(RED), 
-            base.counter_titles[0].animate.set_color(RED)
-        )
-
-        self.play(
-            FadeIn(overscore1),
-            FadeIn(overtext1)
+            Circumscribe(Group(*[base.counters[0], base.counter_titles[0]]), color = RED)
         )
         self.wait()
 
-        self.play(
-            FadeIn(overscore2),
-            FadeIn(overtext2),
-        )
-
-        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 15, flying_color = RED)
-        self.wait()       
-
-
-
-        self.next_section(skip_animations= False)
-
-        self.play(
-            Circumscribe(Group(overscore1, overtext1, parts[i].letters[0], parts[i].letters[len(parts[i].letters)-1]), color = RED)
-        ) 
-        self.wait()
-        self.play(
-            Circumscribe(Group(overscore2, overtext2, parts[j].letters[0], parts[j].letters[len(parts[j].letters)-1]), color = RED)
-        ) 
-        self.wait()
-
-        #But look, the six parts of our string already have the same counts of ABs and CAs and of course the same counts of C as B. So the contribution to the counter with ABC is the same as to the counter with CAB.  
-        #[napíše se #AB=#CA, #C=#B, pak ten samý výpočet pro CAB, rovnice se nahradí CA, B]
-
-        newAB = Tex("{{\#AB}}{{ = }}{{\#CA}}", color = text_color).move_to(overtext1.get_center())
-        newAB[0].set_color(RED)
-        newAB[2].set_color(BLUE)
-        newC = Tex("{{\#C}}{{ = }}{{\#B}}", color = text_color).move_to(overtext2.get_center())
-        newC[0].set_color(RED)
-        newC[2].set_color(BLUE)
-        
-
-        self.play(
-            Transform(overtext1, newAB),
-        )
-        self.wait()
-
-        self.play(
-            Transform(overtext2, newC),
-        )
-        self.wait()
-        self.play(
-            base.counters[4].animate.set_color(BLUE),
-            base.counter_titles[4].animate.set_color(BLUE)
-        )
-        self.wait()
-
-        self.play(
-            Circumscribe(Group(base.counters[4], base.counter_titles[4]), color = BLUE),
-        )
-
-        # self.play(
-        #     Transform(overtext1, Tex("CA", color = text_color).move_to(overtext1.get_center())),
-        #     Transform(overtext2, Tex("B", color = text_color).move_to(overtext2.get_center())),
-        # )
-        # self.wait()
-
-        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 15, flying_color = BLUE)
-        self.wait()
-
-
-        # posunout AB o jedna doleva
-        shft = (parts[0].letters[0].get_center() + over_shift*sc + parts[0].letters[17].get_center() + over_shift * sc )/2 - overscore1.get_center()
-        self.play(
-            overscore1.animate.shift(shft),
-            overtext1.animate.shift(shft)
-        )
-        self.wait()
-
-
-
-
-
-
-
-
-
-        #You can also consider the contributions like A coming from this part, B from this part, and C from this part. But again, the contribution to the counter with ABCs is the same as the contribution to the counter with CAB. 
-        #[to samý]
-
-        self.play(
-            FadeOut(overscore1),
-            FadeOut(overscore2),
-            FadeOut(overtext1),
-            FadeOut(overtext2)
-        )
-
-        self.play(
-            *[l.animate.shift(1*DOWN) for l in base.letters[18*3 : 18*6]]
-        )
-        self.wait()
-
+        want_wait = False
         i = 0
         j = 1
-        k = 5
-        self.next_section(skip_animations= False)
-
+        k = 2
         overscore1 = Line(
             start = parts[i].letters[0].get_center() + over_shift*sc,
             end = parts[i].letters[17].get_center() + over_shift * sc,
@@ -832,58 +721,351 @@ class Construction2(Scene):
 
         self.play(
             FadeIn(overscore1),
-            FadeIn(overtext1)
+            FadeIn(overtext1),
+            FadeIn(overscore2),
+            FadeIn(overtext2),        
+            FadeIn(overscore3),
+            FadeIn(overtext3),   
+        )
+        self.wait()
+        oldi = i
+        oldj = j
+        oldk = k
+        for i in range(6):
+            for j in range(i+1, 6):
+                for k in range(j+1, 6):
+                    if i+j+k > 3:
+                        shft1 = base.letters[18*i].get_center() - base.letters[18*oldi].get_center()
+                        shft2 = base.letters[18*j].get_center() - base.letters[18*oldj].get_center()
+                        shft3 = base.letters[18*k].get_center() - base.letters[18*oldk].get_center()
+                        self.play(
+                            overscore1.animate.shift(shft1),
+                            overtext1.animate.shift(shft1),
+                            overscore2.animate.shift(shft2),
+                            overtext2.animate.shift(shft2),
+                            overscore3.animate.shift(shft3),
+                            overtext3.animate.shift(shft3),
+                        )
+                        if not want_wait:
+                            self.wait()
+                        oldi = i
+                        oldj = j
+                        oldk = k     
+
+        #second anim
+        shft1 = base.letters[18*0].get_center() - base.letters[18*oldi].get_center()
+        shft2 = base.letters[18*1].get_center() - base.letters[18*oldj].get_center()
+        self.wait()                
+        self.play(
+            FadeOut(overscore3),
+            FadeOut(overtext3),
+            overscore1.animate.shift(shft1),
+            Transform(overtext1, Tex("AB", color = RED).move_to(overtext1.get_center()).shift(shft1)),
+            overscore2.animate.shift(shft2),
+            Transform(overtext2, Tex("C", color = RED).move_to(overtext2.get_center()).shift(shft2)),
+        )       
+        self.wait()
+
+        oldi = 0
+        oldj = 1
+        for i in range(6):
+            for j in range(i+1, 6):
+                if i+j > 1:
+                    shft1 = base.letters[18*i].get_center() - base.letters[18*oldi].get_center()
+                    shft2 = base.letters[18*j].get_center() - base.letters[18*oldj].get_center()
+                    self.play(
+                        overscore1.animate.shift(shft1),
+                        overtext1.animate.shift(shft1),
+                        overscore2.animate.shift(shft2),
+                        overtext2.animate.shift(shft2),
+                    )
+                    if not want_wait:
+                        self.wait()
+                    oldi = i
+                    oldj = j
+        #third anim
+        shft1 = base.letters[18*0].get_center() - base.letters[18*oldi].get_center()
+        shft2 = base.letters[18*1].get_center() - base.letters[18*oldj].get_center()
+        self.wait()                
+        self.play(
+            overscore1.animate.shift(shft1),
+            Transform(overtext1, Tex("A", color = RED).move_to(overtext1.get_center()).shift(shft1)),
+            overscore2.animate.shift(shft2),
+            Transform(overtext2, Tex("BC", color = RED).move_to(overtext2.get_center()).shift(shft2)),
+        )       
+        self.wait()
+
+        oldi = 0
+        oldj = 1
+        for i in range(6):
+            for j in range(i+1, 6):
+                if i+j > 1:
+                    shft1 = base.letters[18*i].get_center() - base.letters[18*oldi].get_center()
+                    shft2 = base.letters[18*j].get_center() - base.letters[18*oldj].get_center()
+                    self.play(
+                        overscore1.animate.shift(shft1),
+                        overtext1.animate.shift(shft1),
+                        overscore2.animate.shift(shft2),
+                        overtext2.animate.shift(shft2),
+                    )
+                    if not want_wait:
+                        self.wait()
+                    oldi = i
+                    oldj = j
+        #fourth anim
+        shft1 = base.letters[18*0].get_center() - base.letters[18*oldi].get_center()
+        self.wait()                
+        self.play(
+            overscore1.animate.shift(shft1),
+            Transform(overtext1, Tex("ABC", color = RED).move_to(overtext1.get_center()).shift(shft1)),
+            FadeOut(overscore2),
+            FadeOut(overtext2),
+        )       
+        self.wait()
+
+        oldi = 0
+        for i in range(6):
+            if i > 0:
+                shft1 = base.letters[18*i].get_center() - base.letters[18*oldi].get_center()
+                self.play(
+                    overscore1.animate.shift(shft1),
+                    overtext1.animate.shift(shft1),
+                )
+                if not want_wait:
+                    self.wait()
+                oldi = i
+        self.wait()
+        self.play(
+            FadeOut(overscore1),
+            FadeOut(overtext1)
         )
         self.wait()
 
+        # compare ABC and CAB
+
         self.play(
+            Circumscribe(Group(*[base.counters[0], base.counter_titles[0]]), color = RED)
+        )
+        self.wait()
+        self.play(
+            Circumscribe(Group(*[base.counters[4], base.counter_titles[4]]), color = BLUE)
+        )
+        self.wait()
+
+        # only now we start counting
+
+        i = 1
+        j = 2
+        shft1 = base.letters[18*i].get_center() - base.letters[18*5].get_center()
+        shft2 = base.letters[18*j].get_center() - base.letters[18*5].get_center()
+        overscore1.shift(shft1)
+        overtext1.shift(shft1)
+        overscore2.shift(shft2)
+        overtext2.shift(shft2)
+        overtext1 = Tex("AB", color = RED).move_to(overtext1.get_center())
+        overtext2 = Tex("C", color = RED).move_to(overtext2.get_center())
+        
+        self.wait()
+        self.play(
+            FadeIn(overscore1),
+            FadeIn(overtext1),
             FadeIn(overscore2),
             FadeIn(overtext2),
+        )       
+        self.wait()
+
+
+        self.play(
+            Circumscribe(Group(overscore1, overtext1, parts[i].letters[0], parts[i].letters[len(parts[i].letters)-1]), color = RED)
+        ) 
+        self.wait()
+        self.play(
+            Circumscribe(Group(overscore2, overtext2, parts[j].letters[0], parts[j].letters[len(parts[j].letters)-1]), color = RED)
+        ) 
+        self.wait()
+
+        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=10, skip_factor = 3, flying_color = RED)
+        self.wait()       
+
+
+        self.next_section(skip_animations= False)
+
+
+        #But look, the six parts of our string already have the same counts of ABs and CAs and of course the same counts of C as B. So the contribution to the counter with ABC is the same as to the counter with CAB.  
+        #[napíše se #AB=#CA, #C=#B, pak ten samý výpočet pro CAB, rovnice se nahradí CA, B]
+
+        newAB = Tex("{{\#AB}}{{ = }}{{\#CA}}", color = text_color).move_to(overtext1.get_center())
+        newAB[0].set_color(RED)
+        newAB[2].set_color(BLUE)
+        newC = Tex("{{\#C}}{{ = }}{{\#B}}", color = text_color).move_to(overtext2.get_center())
+        newC[0].set_color(RED)
+        newC[2].set_color(BLUE)
+        
+
+        self.play(
+            Transform(overtext1, newAB),
         )
         self.wait()
 
         self.play(
-            FadeIn(overscore3),
-            FadeIn(overtext3),
+            Transform(overtext2, newC),
         )
         self.wait()
-
-
-        base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 60, flying_color=RED)
+        self.play(
+            base.counters[4].animate.set_color(BLUE),
+            base.counter_titles[4].animate.set_color(BLUE)
+        )
         self.wait()
-
-        n1 = Tex("\#A = \#C", color = text_color).move_to(overtext1.get_center())
-        n2 = Tex("\#B = \#A", color = text_color).move_to(overtext2.get_center())
-        n3 = Tex("\#C = \#B", color = text_color).move_to(overtext3.get_center())
-        for n in [n1, n2, n3]:
-            n[0][0:2].set_color(RED)
-            n[0][3:].set_color(BLUE)
 
         self.play(
-            Transform(overtext1, n1),
-            Transform(overtext2, n2),
-            Transform(overtext3, n3),
+            Circumscribe(Group(base.counters[4], base.counter_titles[4]), color = BLUE),
         )
-        self.wait()
 
         # self.play(
-        #     Transform(overtext1, Tex("C", color = text_color).move_to(overtext1.get_center())),
-        #     Transform(overtext2, Tex("A", color = text_color).move_to(overtext2.get_center())),
-        #     Transform(overtext3, Tex("B", color = text_color).move_to(overtext3.get_center())),
+        #     Transform(overtext1, Tex("CA", color = text_color).move_to(overtext1.get_center())),
+        #     Transform(overtext2, Tex("B", color = text_color).move_to(overtext2.get_center())),
         # )
         # self.wait()
 
-        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 60, flying_color = BLUE)
+        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=10, skip_factor = 3, flying_color = BLUE)
         self.wait()
+
+
+        # # posunout AB o jedna doleva
+        # shft = (parts[0].letters[0].get_center() + over_shift*sc + parts[0].letters[17].get_center() + over_shift * sc )/2 - overscore1.get_center()
+        # self.play(
+        #     overscore1.animate.shift(shft),
+        #     overtext1.animate.shift(shft)
+        # )
+        # self.wait()
+
+
+
+
+
+
+
+
+
+        #You can also consider the contributions like A coming from this part, B from this part, and C from this part. But again, the contribution to the counter with ABCs is the same as the contribution to the counter with CAB. 
+        #[to samý]
 
         self.play(
             FadeOut(overscore1),
             FadeOut(overscore2),
-            FadeOut(overscore3),
             FadeOut(overtext1),
-            FadeOut(overtext2),
-            FadeOut(overtext3)
+            FadeOut(overtext2)
         )
+
+        # self.play(
+        #     *[l.animate.shift(1*DOWN) for l in base.letters[18*3 : 18*6]]
+        # )
+        self.wait()
+        if False:
+            i = 0
+            j = 1
+            k = 5
+            self.next_section(skip_animations= False)
+
+            overscore1 = Line(
+                start = parts[i].letters[0].get_center() + over_shift*sc,
+                end = parts[i].letters[17].get_center() + over_shift * sc,
+                color = text_color
+            )
+            overtext1 = Tex(
+                "A",
+                color = RED
+            ).move_to(
+                overscore1.get_center()
+            ).next_to(
+                overscore1,
+                UP
+            )
+
+            overscore2 = Line(
+                start = parts[j].letters[0].get_center() + over_shift*sc,
+                end = parts[j].letters[len(parts[j].letters) - 1].get_center() + over_shift * sc,
+                color = text_color
+            )
+            overtext2 = Tex(
+                "B",
+                color = RED
+            ).move_to(
+                overscore2.get_center()
+            ).next_to(
+                overscore2,
+                UP
+            )
+
+            overscore3 = Line(
+                start = parts[k].letters[0].get_center() + over_shift*sc,
+                end = parts[k].letters[len(parts[k].letters) - 1].get_center() + over_shift * sc,
+                color = text_color
+            )
+            overtext3 = Tex(
+                "C",
+                color = RED
+            ).move_to(
+                overscore3.get_center()
+            ).next_to(
+                overscore3,
+                UP
+            )
+
+            self.play(
+                FadeIn(overscore1),
+                FadeIn(overtext1)
+            )
+            self.wait()
+
+            self.play(
+                FadeIn(overscore2),
+                FadeIn(overtext2),
+            )
+            self.wait()
+
+            self.play(
+                FadeIn(overscore3),
+                FadeIn(overtext3),
+            )
+            self.wait()
+
+
+            base.find_triplets(self, [0], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 60, flying_color=RED)
+            self.wait()
+
+            n1 = Tex("\#A = \#C", color = text_color).move_to(overtext1.get_center())
+            n2 = Tex("\#B = \#A", color = text_color).move_to(overtext2.get_center())
+            n3 = Tex("\#C = \#B", color = text_color).move_to(overtext3.get_center())
+            for n in [n1, n2, n3]:
+                n[0][0:2].set_color(RED)
+                n[0][3:].set_color(BLUE)
+
+            self.play(
+                Transform(overtext1, n1),
+                Transform(overtext2, n2),
+                Transform(overtext3, n3),
+            )
+            self.wait()
+
+            # self.play(
+            #     Transform(overtext1, Tex("C", color = text_color).move_to(overtext1.get_center())),
+            #     Transform(overtext2, Tex("A", color = text_color).move_to(overtext2.get_center())),
+            #     Transform(overtext3, Tex("B", color = text_color).move_to(overtext3.get_center())),
+            # )
+            # self.wait()
+
+            base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 60, flying_color = BLUE)
+            self.wait()
+
+            self.play(
+                FadeOut(overscore1),
+                FadeOut(overscore2),
+                FadeOut(overscore3),
+                FadeOut(overtext1),
+                FadeOut(overtext2),
+                FadeOut(overtext3)
+            )
 
         #base.clear_counters(self)
 
@@ -1117,7 +1299,7 @@ class Scrolling(Scene):
         
         #TODO change
         L = 50
-        L = 1
+        #L = 1
         up_shift = 3*UP
         test = 0
         

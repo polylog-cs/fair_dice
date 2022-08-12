@@ -107,20 +107,25 @@ class Thanks(Scene):
     def construct(self):
         s = [
             "Big thanks to",
-            "the organizers of SoME2,",
-            "Manim Community,",
-            "Bernhard Haeupler, Hanka Rozhoňová,",
-            "Vojtěch Volhejn, Tung Anh Vu",
+            "-- the organizers of SoME2,",
+            "-- Manim Community,",
+            "-- Bernhard Haeupler, Florian Haeupler, Richard Hladík,",
+            "Filip Hlásek, Jan Petr, Hanka Rozhoňová, Vojtěch Volhejn", 
+            "Tung Anh Vu",
+            "See video description for links, problems, etc. :)"
         ]
         t = [
             Tex(ss, color = text_color) for ss in s
         ]
         # for i in range(3, len(t)):
         #     t[i].scale(0.7)
-        t[0].move_to(2*LEFT + 2*UP)
-        for i in range(1, len(t)):
-            t[i].next_to(t[i-1], DOWN).align_to(t[i-1], LEFT)
-        t[0].shift(1*LEFT)
+        t[0].move_to(3*LEFT + 3*UP)
+        t[1].next_to(t[0], DOWN).align_to(t[0], LEFT)
+        t[2].next_to(t[1], DOWN).align_to(t[0], LEFT)
+        t[3].scale(0.7).next_to(t[2], DOWN).align_to(t[0], LEFT)
+        t[4].scale(0.7).next_to(t[3], DOWN).align_to(t[0], LEFT)
+        t[5].scale(0.7).next_to(t[4], DOWN).align_to(t[0], LEFT)
+        t[6].move_to(t[5].get_center()[1]*UP + 1*DOWN)
 
         self.play(
             *[FadeIn(tt) for tt in t]

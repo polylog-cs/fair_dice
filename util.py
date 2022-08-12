@@ -189,7 +189,7 @@ class FairString(FairBase):
         self.counters = []
         self.counter_titles = []
 
-    def write(self, scene, pos_ = None, sep = default_sep, center = True, scale = 1):
+    def write(self, scene, pos_ = None, sep = default_sep, center = True, scale = 1, do = True):
         if pos_ is None:
             pos_ = self.letters[0].get_center()        
 
@@ -204,13 +204,13 @@ class FairString(FairBase):
             off = (self.letters[0].get_center() + self.letters[len(self.letters) - 1].get_center())/2
             for l in self.letters:
                 l.shift(off * LEFT)
-
-        scene.play(
-            AnimationGroup(
-                *[FadeIn(l) for l in self.letters],
-            ),
-            run_time = 1
-        )
+        if do:
+            scene.play(
+                AnimationGroup(
+                    *[FadeIn(l) for l in self.letters],
+                ),
+                run_time = 1
+            )
 
     def create_from_list_of_letters(self, letters):
         self.letters = letters
@@ -301,12 +301,13 @@ class FairString(FairBase):
         skip_cnt = 0
         fst_cheap = True
         counter_changes_to_do = [0] * len(self.counters)
-
+        lasti, lastj, lastk = 0,0,0
         for i in range(ranges[0][0], ranges[0][1]):
             for j in range(max(i+1, ranges[1][0]), ranges[1][1]):
                 for k in range(max(j+1, ranges[2][0]), ranges[2][1]):
                     for mi in match_set:
                         if self.str[i] == self.counter_letters[mi][0] and self.str[j] == self.counter_letters[mi][1] and self.str[k] == self.counter_letters[mi][2]:
+                            lasti, lastj, lastk = i,j,k
                             if cheap_after_steps == None or cheap_after_steps > cnt:
                                 if beg == True:
                                     underscore1.move_to(self.letters[i].get_center() + under_shift * scale)
@@ -383,10 +384,22 @@ class FairString(FairBase):
                                     )
                                     counter_changes_to_do = [0]*len(self.counters)
                             cnt += 1
+        
         if counter_changes_to_do != [0]*len(self.counters):
+            anims = []
             for it in range(len(self.counters)):
-                self.counters[it].increment_value(counter_changes_to_do[it])
-                scene.add(self.counters[it])
+                anims.append(
+                    self.counters[it].animate.increment_value(counter_changes_to_do[it])
+                )
+            anims += [
+                underscore1.animate.move_to(self.letters[lasti].get_center() + under_shift * scale),
+                underscore2.animate.move_to(self.letters[lastj].get_center() + under_shift * scale),
+                underscore3.animate.move_to(self.letters[lastk].get_center() + under_shift * scale),
+            ]
+
+
+            scene.play(*anims)
+            scene.wait()
 
         if beg == False:
             # if fst_cheap == True:
@@ -458,119 +471,73 @@ class FairString(FairBase):
         self.letters += sp.letters
         self.str += sp.str
 
+def create_bubble(pos, scale = 1.0, color = text_color, length_scale = 1):
+    scale = scale / 200.0
+    pos = np.array(pos) - np.array([489.071, 195.644, 0.0])*scale
+    ret_objects = []
 
-# class FairDice(FairBase):
-#     def __init__(self, vals_, pos_ = 0*LEFT):
-#         self.dice = vals_
-#         self.lines = []
-#         for i, die in enumerate(self.dice):
-#             str = r"{{" + string.ascii_uppercase[i] + r": }}"
-#             for j in len(die):
-#                 str.append(r"{{" + str(j) + r"}}")
-#                 if j != len(die)-1:
-#                     str.append(r"{{, }}")
-#             self.lines.append(
-#                 Tex(str, color = text_color)
-#             )
-#             if i == 0:
-#                 self.lines[i].move_to(pos_)
-#             else:
-#                 self.lines[i].next_to(self.lines[i-1], DOWN)
-#         self.counters = []
-#         self.counter_titles = []
+    c1 = Circle(
+        radius = 28.5689 * scale,
+        color = color
+    ).move_to(np.array([489.071, 195.644, 0.0])*scale).shift(pos + 0.3*UP)
+    print(c1.get_center())
 
-#     def find_triplets(self, scene, match_set, ranges = [None, None, None], scale = 1, cheap_after_steps = None, prob = 1):
-#         underscore1 = Line(start = -0.1*RIGHT + under_shift, end = 0.1*RIGHT + under_shift, color = text_color)
-#         underscore2 = underscore1.copy()
-#         underscore3 = underscore1.copy()
-#         #anims = []
-#         beg = True
-#         if ranges[0] == None:
-#             ranges = [[0, len(self.dice[0])], [0, len(self.dice[1])], [0, len(self.dice[2])]]
-#         cnt = 0
-#         fst_cheap = True
-#         counter_changes_to_do = [0] * len(self.counters)
+    c2 = Circle(
+        radius = 39.7392 * scale,
+        color = color
+    ).move_to(np.array([409.987, 274.728, 0.0])*scale).shift(pos + 0.15*UP)
+    ret_objects += [c1, c2]
 
-#         for i in range(ranges[0][0], ranges[0][1]):
-#             for j in range(ranges[1][0], ranges[1][1]):
-#                 for k in range(ranges[2][0], ranges[2][1]):
-#                     if cheap_after_steps == None or cheap_after_steps > cnt:
-#                         if beg == True:
-#                             underscore1.move_to(self.lines[i].get_center() + under_shift * scale)
-#                             underscore2.move_to(self.letters[j].get_center() + under_shift * scale)
-#                             underscore3.move_to(self.letters[k].get_center() + under_shift * scale)
-#                             scene.play(
-#                                 AnimationGroup(
-#                                     Create(underscore1),
-#                                     Create(underscore2),
-#                                     Create(underscore3)
-#                                 ),
-#                                 run_time = 0.1
-#                             )
-#                             beg = False
-#                         else:
-#                             scene.play(
-#                                 AnimationGroup(
-#                                     underscore1.animate.move_to(self.letters[i].get_center() + under_shift * scale),
-#                                     underscore2.animate.move_to(self.letters[j].get_center() + under_shift * scale),
-#                                     underscore3.animate.move_to(self.letters[k].get_center() + under_shift * scale),
-#                                     run_time = 0.1
-#                                 )
-#                             )
-#                         flying_letter1 = self.letters[i].copy()
-#                         flying_letter2 = self.letters[j].copy()
-#                         flying_letter3 = self.letters[k].copy()
-#                         end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
-#                         scene.play(
-#                             AnimationGroup(
-#                                 self.counters[mi].animate.increment_value(1),
-#                                 Transform(flying_letter1, end_dot),
-#                                 Transform(flying_letter2, end_dot),
-#                                 Transform(flying_letter3, end_dot),
-#                                 run_time = 1
-#                             )
-#                         )
-#                     else: #cheap steps, only with probability prob
-#                         # if fst_cheap == True:
-#                         #     fst_cheap = False
-#                         #     scene.play(
-#                         #         Uncreate(underscore2),
-#                         #         Uncreate(underscore3)
-#                         #     )
-#                         counter_changes_to_do[mi] += 1
-#                         if random.random() < prob:
-#                             scene.play(
-#                                 AnimationGroup(
-#                                     underscore1.animate.move_to(self.letters[i].get_center() + under_shift * scale),
-#                                     underscore2.animate.move_to(self.letters[j].get_center() + under_shift * scale),
-#                                     underscore3.animate.move_to(self.letters[k].get_center() + under_shift * scale),
-#                                     run_time = 0.1
-#                                 )
-#                             )
-#                             flying_letter1 = self.letters[i].copy()
-#                             flying_letter2 = self.letters[j].copy()
-#                             flying_letter3 = self.letters[k].copy()
-#                             end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
-#                             scene.play(
-#                                 AnimationGroup(
-#                                     *[self.counters[it].animate.increment_value(counter_changes_to_do[it]) for it in range(len(self.counters))],
-#                                     Transform(flying_letter1, end_dot),
-#                                     Transform(flying_letter2, end_dot),
-#                                     Transform(flying_letter3, end_dot),
-#                                     run_time = 1
-#                                 )
-#                             )
-#                             counter_changes_to_do = [0]*len(self.counters)
-#                     cnt += 1
-#         if counter_changes_to_do != [0]*len(self.counters):
-#             for it in range(len(self.counters)):
-#                 self.counters[it].increment_value(counter_changes_to_do[it])
-#                 scene.add(self.counters[it])
+    pnts = [
+        (373.367*RIGHT +  366.776 * UP) * scale + pos,
+        (503.717*RIGHT +  453.873 * UP) * scale + pos,
+        (464.612*RIGHT +  613.847 * UP) * scale + pos,
+        (340.78*RIGHT +  643.472 * UP) * scale + pos,
+        (131.628*RIGHT +  596.072 * UP) * scale + pos,
+        (174.288*RIGHT +  388.106 * UP) * scale + pos,
+    ]
 
-#         if beg == False:
-#             # if fst_cheap == True:
-#             scene.play(
-#                 Uncreate(underscore1),
-#                 Uncreate(underscore2),
-#                 Uncreate(underscore3),
-#             )
+    center = 0*LEFT
+    for i in range(len(pnts)):
+        pnts[i] += (length_scale - 1)*(pnts[i] - pnts[0])[0]*RIGHT
+        center += pnts[i]
+    center /= len(pnts)
+
+    angles = np.array([120, 170, 120, 120, 180, 120])*1.5707963267/90.0
+
+
+    for i in range(len(pnts)):
+        ret_objects.append(
+            ArcBetweenPoints(pnts[i], pnts[(i+1)%len(pnts)], angle = angles[i], color = color)
+        )
+
+    return ret_objects, center
+
+
+def create_cube(pos, scale = 1, color = text_color):
+
+    scale = scale /200.0
+
+    vec = [
+        (227.927 - 235.63)*RIGHT + (489.666 - 188.085)*UP,
+        (483.886 - 235.63)*RIGHT + (262.739 - 188.085)*UP,
+        (122.462 - 235.63)*RIGHT + (308.362 - 188.085)*UP,
+    ]
+    for v in vec:
+        v *= scale
+        v *= 1/5.0
+    pos -= (vec[0] + vec[1] + vec[2])*5.0/2
+
+    ret_objects = []
+
+    for spos, d1, d2 in [(pos, 0, 1), (pos, 1, 0), (pos, 0, 2), (pos, 2, 0), (pos + vec[0]*5, 1, 2), (pos + vec[0]*5, 2, 1)]:
+        for i in range(6):
+            ret_objects.append(
+                Line(
+                    start = spos + vec[d1] * i,
+                    end = spos + vec[d1] * i + vec[d2]*5,
+                    color = color
+                )
+            )
+
+    return ret_objects

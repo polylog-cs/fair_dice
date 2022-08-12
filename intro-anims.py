@@ -1,5 +1,13 @@
 from util import *
 
+class Bubble(Scene):
+    def construct(self):
+        cube = create_cube(0*LEFT)
+        self.add(
+            *cube
+        )
+        self.wait(10)
+
 class Polylog(Scene):
     def construct(self):
         authors = Tex(
@@ -199,10 +207,10 @@ class DiceSquare(Scene):
             FadeIn(txtba)
         )
         self.play(
-            Circumscribe(dice_numbers[1][1], color = BLUE),
+            Circumscribe(dice_numbers[0][3], color = BLUE)
         )
         self.play(
-            Circumscribe(dice_numbers[0][3], color = BLUE)
+            Circumscribe(dice_numbers[1][1], color = BLUE),
         )
         self.wait()
 
@@ -248,6 +256,31 @@ class DiceSquare(Scene):
             *[square.animate.set_color(BLUE) for square in [squares[3][3], squares[4][4], squares[5][5]]]
         )
         self.wait(2)
+        for i in [0,1]:
+            for j in range(6):
+                dice_numbers[i][j].generate_target()
+        
+        dice_numbers[0][0].target.move_to(dice_numbers[0][0].get_center())
+        dice_numbers[0][1].target.move_to(dice_numbers[0][2].get_center())
+        dice_numbers[0][2].target.move_to(dice_numbers[1][1].get_center())
+        dice_numbers[0][3].target.move_to(dice_numbers[0][3].get_center())
+        dice_numbers[0][4].target.move_to(dice_numbers[0][5].get_center())
+        dice_numbers[0][5].target.move_to(dice_numbers[1][4].get_center())
+
+        dice_numbers[1][0].target.move_to(dice_numbers[0][1].get_center())
+        dice_numbers[1][1].target.move_to(dice_numbers[1][0].get_center())
+        dice_numbers[1][2].target.move_to(dice_numbers[1][2].get_center())
+        dice_numbers[1][3].target.move_to(dice_numbers[0][4].get_center())
+        dice_numbers[1][4].target.move_to(dice_numbers[1][3].get_center())
+        dice_numbers[1][5].target.move_to(dice_numbers[1][5].get_center())
+
+        self.play(
+            *[MoveToTarget(d) for d in dice_numbers[0] + dice_numbers[1]],
+            *[square.animate.set_color(RED) for square in squares[0]+squares[1]+squares[2]],
+            *[square.animate.set_color(BLUE) for square in squares[3]+squares[4]+squares[5]],
+        )
+        self.wait()
+
         self.play(
             *[FadeOut(o) for o in self.mobjects]
         )
@@ -256,12 +289,64 @@ class DiceSquare(Scene):
 
 #TODO put camera to the right place
 pos_three_dice = 3*UP
-class DiceCubeLeft(ThreeDScene):
+pos_fst_example = 4.5*LEFT + 1.5*UP
+sc_examples = 0.9
+
+
+class DiceCube(ThreeDScene):
     def construct(self):
 
+        s = fair_strings[0]
+        table = dice_table(string_to_list(s), scale=1, col_widths = [0.4]*7)
+        table.shift(2*LEFT)
 
+        self.add_fixed_in_frame_mobjects(*table)
 
-        self.next_section(skip_animations=True)
+        magic_pos = np.array([
+            3.59*DOWN + 1 * LEFT
+        ]*3)
+        magic_pos += np.array([
+            0.2*UP,
+            0.2*UP,
+            0.15*DOWN
+        ])
+        print(magic_pos)
+        magic_vec = [
+            1.7 *LEFT + 1.8*UP, 
+            3.7*RIGHT + 1.15*UP, 
+            5*UP + 0.25*LEFT
+        ]
+        magic_sc = 0.85
+
+        anims = []
+        for i in range(3):
+            for j in range(6):
+                anims.append(
+                    table[i*7 + j + 1].animate.scale(magic_sc).move_to(magic_pos[i] + (j+1) * magic_vec[i] / 6.0)
+                )
+
+        self.play(
+            AnimationGroup(
+                AnimationGroup(
+                    FadeOut(table[0]),
+                    FadeOut(table[7]),
+                    FadeOut(table[14]),
+                ),
+                AnimationGroup(
+                    *anims[0:6],
+                ),
+                AnimationGroup(
+                    *anims[6:12],
+                ),
+                AnimationGroup(
+                    *anims[12:],
+                ),
+                lag_ratio = 0.5
+            )
+
+        )
+
+        self.next_section(skip_animations=False)
 
         self.set_camera_orientation(
             phi = 70*DEGREES,  # pitch
@@ -290,7 +375,9 @@ class DiceCubeLeft(ThreeDScene):
         
         axes.set_color(text_color)
         
+        skeleton = Cube(side_length = 6, fill_opacity = 0, stroke_width=1, color = text_color).shift(dirs[2]*2.5)
 
+        
         # self.add(
         #     base,
         #     Cube(side_length = 1, fill_color = RED).move_to(ORIGIN).shift(dirs[0]),
@@ -360,24 +447,29 @@ class DiceCubeLeft(ThreeDScene):
         #     *labels_beg[2],
         # )
         # self.wait()
-        self.add(axes)
-
-        self.wait()
-        # self.play(
-        #     Transform(
-        #         labels_beg[0][0], labels[0][0]
-        #     )
-        # )
         self.add_fixed_orientation_mobjects(
             *labels[0],
             *labels[1],
             *labels[2],
         )
-        self.wait()
+        self.play(
+            FadeIn(skeleton),
+            FadeIn(axes),
+            *[FadeIn(l) for lab in labels for l in lab],
+            *[FadeOut(t) for t in table[1:7] + table[8:14] + table[15:]]
+        )
+
+        # self.play(
+        #     Transform(
+        #         labels_beg[0][0], labels[0][0]
+        #     )
+        # )
+
         self.begin_ambient_camera_rotation(
             rate = PI/10,
             about = "theta"
         )
+        T = 1
         self.wait()
 
         all_cubes = []
@@ -415,6 +507,7 @@ class DiceCubeLeft(ThreeDScene):
                     run_time = 0.5
                 )
                 self.wait(2.5)
+                T += 3
                 if len(order_labels) == 0:
                     anim_shift = order_label.animate.scale(0.7).move_to(5*RIGHT + 3*UP)
                 else:
@@ -427,6 +520,7 @@ class DiceCubeLeft(ThreeDScene):
                     run_time = 0.5
                 )
                 self.wait()
+                T += 1.5
 
         self.next_section(skip_animations=False)
 
@@ -435,219 +529,60 @@ class DiceCubeLeft(ThreeDScene):
         calculation_text = Tex(r"$\frac{6^3}{3!} = 36$", color=BASE2).scale(2)
         self.add_fixed_in_frame_mobjects(calculation_text)
         self.play(FadeIn(calculation_text))
-        self.wait(3)
-        btw_str = [
-            "Usually, when people say that a die is fair, ",
-            "they mean that all its sides are equally likely. ",
-            "For us, fairness is instead a property of ",
-            r"a group of dice, so don’t be confused. \smiley "
-        ]
-        myTemplate = TexTemplate()
-        myTemplate.add_to_preamble(r"\usepackage{wasysym}")
+        T += 3
+        # self.wait(3)
+        # btw_str = [
+        #     "Usually, when people say that a die is fair, ",
+        #     "they mean that all its sides are equally likely. ",
+        #     "For us, fairness is instead a property of ",
+        #     r"a group of dice, so don’t be confused. \smiley "
+        # ]
+        # myTemplate = TexTemplate()
+        # myTemplate.add_to_preamble(r"\usepackage{wasysym}")
         
-        btw_text_list = [
-            Tex(str, color = text_color, tex_template = myTemplate).scale(0.6)
-            for str in btw_str
-        ] 
-        btw_text = Group(*btw_text_list).arrange(DOWN, buff = 0.05).shift(3.3*DOWN + 4.1*LEFT)
-        for txt in btw_text_list:
-            txt.align_to(btw_text_list[0], LEFT)
+        # btw_text_list = [
+        #     Tex(str, color = text_color, tex_template = myTemplate).scale(0.6)
+        #     for str in btw_str
+        # ] 
+        # btw_text = Group(*btw_text_list).arrange(DOWN, buff = 0.05).shift(3.3*DOWN + 4.1*LEFT)
+        # for txt in btw_text_list:
+        #     txt.align_to(btw_text_list[0], LEFT)
 
-        self.add_fixed_in_frame_mobjects(*btw_text_list)
-        self.play(*[FadeIn(text) for text in btw_text_list])
+        # self.add_fixed_in_frame_mobjects(*btw_text_list)
+        # self.play(*[FadeIn(text) for text in btw_text_list])
+        # self.wait()
+        # self.play(*[FadeOut(text) for text in btw_text_list])
+        
+        
+        self.wait(30 - T)
+        
+        s = fair_strings[0]
+        ntable = dice_table(string_to_list(s), scale=1, col_widths = [0.4]*7)
+        ntable.shift(2*LEFT)
+
+        self.play(
+            *[FadeIn(t) for t in table],
+            run_time = 0.01
+        )
+
+        move_anims = []
+        for i in range(3):
+            for j in range(6):
+                move_anims.append(
+                    table[i*7 + j + 1].animate.move_to(ntable[i*7+j+1].get_center())
+                )
+
+        self.play(
+            FadeOut(axes),
+            FadeOut(skeleton),
+            FadeOut(calculation_text),
+            *[FadeOut(l) for l in order_labels],
+            *[FadeOut(cube) for cube in all_cubes],
+            *move_anims,
+        )
         self.wait()
-        self.play(*[FadeOut(text) for text in btw_text_list])
-        self.wait(20)
+
         return 
-
-
-pos_fst_example = 4.5*LEFT + 1.5*UP
-sc_examples = 0.9
-class FairExamples(Scene):
-    def construct(self):
-        self.next_section(skip_animations=False)
-        fair_dice = []
-        
-        sc = sc_examples
-        tables = []
-        for i, s in enumerate(fair_strings):
-            table = dice_table(string_to_list(s), scale=sc)
-            table.shift(pos_fst_example + (i//3)*3*DOWN + (i%3)*4*RIGHT)
-            tables.append(table)
-            # fair_dice.append(table)
-
-        tables_group = VGroup(*tables).arrange_in_grid(rows=2, buff=0.8).center()
-
-        self.add(
-            tables[0]
-        )
-        self.play(
-            AnimationGroup(
-                *[FadeIn(t) for t in tables[1:]],
-                lag_ratio = 0.3
-            )
-        )
-        self.wait()  
-
-        msg = Tex("(up to permuting the dice or replacing each $x$ by $19-x$)", color = text_color).move_to(3.5*DOWN).scale(0.8)
-        self.play(
-            FadeIn(msg)
-        )    
-        self.wait(2)
-        self.play(
-            FadeOut(msg)
-        )
-        self.wait()
-        self.play(
-            Circumscribe(tables[0], color = RED)
-        )
-        self.wait()
-        self.play(
-            AnimationGroup(
-                *[FadeOut(t) for t in tables],
-            )            
-        )
-        self.wait()
-
-        # solution for four dice
-        fair_dice4 = dice_table(four_dice, scale=1.3).center()
-        self.play(
-            FadeIn(fair_dice4)
-        )
-        self.wait()
-
-        self.play(
-            *[FadeOut(line) for line in fair_dice4]
-        )
-        self.wait()
-
-        ttl = Tex(r"{{three }}{{6}}{{-sided dic}}{{e}}", color = text_color).scale(2)
-        ttl2 = Tex(r"{{three }}{{5}}{{-sided dic}}{{e??}}", color = text_color).scale(2)
-        ttl3 = Tex(r"{{three }}{{5}}{{-sided dic}}{{e??}}", color = text_color).shift(2*UP)
-        self.play(
-            FadeIn(ttl)
-        )
-        self.wait()
-        self.play(
-            Transform(ttl, ttl2)
-        )
-        self.wait()
-        self.play(Transform(ttl, ttl3))
-        self.wait()
-
-        t1 = Tex("{{$5^3$}}{{ possible outcomes}}", color = text_color).next_to(ttl3, DOWN).shift(DOWN)
-        t1new = Tex("{{$125$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center())
-        t2 = Tex("{{6 }}{{equally-sized groups}}", color = text_color).next_to(t1, DOWN)
-        t3 = Tex(r"{{$\frac{125}{6}$}}{{ outcomes per group}}", color = text_color).next_to(t2, DOWN)
-        t3new = Tex(r"{{$20.833\dots$}}{{ outcomes per group}}", color = text_color).move_to(t3.get_center())
-
-        self.play(
-            Succession(
-                FadeIn(t1),
-                Wait(),
-            )
-        )
-        self.play(
-            Transform(t1, t1new)
-        )
-        self.wait()
-        self.play(
-            Succession(
-                FadeIn(t2),
-                Wait(),
-                FadeIn(t3),
-                Wait(),
-            )
-        )
-        self.play(
-            Transform(t3, t3new),
-        )
-        self.wait()
-
-        ttl5 = Tex(r"{{five }}{{s}}{{-sided dic}}{{e}}", color = text_color).move_to(ttl3.get_center())
-        t15 = Tex(r"{{$s^5$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center())
-        t25 = Tex(r"{{$5!$ }}{{equally-sized groups}}", color = text_color).move_to(t2.get_center())
-        t35 = Tex(r"{{$\frac{s^5}{5!}$}}{{ outcomes per group}}", color = text_color).move_to(t3.get_center())
-
-        tdiv = Tex(r"{{$5!$}}{{$\mid$}}{{$ s^5$}}", color = text_color).next_to(t2, DOWN)
-        tdiv2 = Tex(r"{{$2\cdot 3 \cdot 4 \cdot 5$}}{{$\;\mid\;$}}{{$ s^5$}}", color = text_color).move_to(tdiv.get_center())
-        t4 = Tex(r"{{$2, 3, 5$}}{{$\;\mid\;$}}{{$ s$}}", color = text_color).next_to(tdiv2, DOWN).shift(0.5*DOWN)
-        tdiv2.move_to(t4.get_center())
-        t5 = Tex(r"{{$s \ge $}}{{$\,2 \cdot 3 \cdot 5$}}", color = text_color).next_to(t4, DOWN)
-        t52= Tex(r"{{$s \ge $}}{{$\,30$}}", color = text_color).move_to(t5.get_center())
-
-        self.play(
-            Transform(ttl, ttl5)
-        )
-        self.wait()
-        self.play(
-            Circumscribe(ttl[1], color =  RED)
-        )
-        self.wait()
-        self.play(
-            Transform(t1, t15)
-        )
-        self.wait()
-        self.play(
-            Transform(t2, t25)
-        )
-        self.wait()
-        self.play(
-            Transform(t3, t35)
-        )
-        self.wait()
-        self.play(
-            FadeIn(tdiv2)
-        )
-        self.wait()
-        
-        self.play(
-            Transform(tdiv2[0][0:4], t4[0][0:4]),
-            FadeOut(tdiv2[0][4:6]),
-            Transform(tdiv2[0][-1], t4[0][-1]),
-            Transform(tdiv2[1:], t4[1:])
-        )
-        self.wait()
-        self.wait()
-        self.play(
-            FadeIn(t5)
-        )
-        self.wait()
-        self.play(
-            Transform(t5, t52)
-        )
-        self.wait()
-
-
-
-        #to same pro sedm
-
-        ttl7 = Tex(r"{{seven }}{{s}}{{-sided dic}}{{e}}", color = text_color).move_to(ttl3.get_center())
-        t17 = Tex(r"{{$s^7$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center())
-        t27 = Tex(r"{{$7!$ }}{{equally-sized groups}}", color = text_color).move_to(t2.get_center())
-        t37 = Tex(r"{{$\frac{s^7}{7!}$}}{{ outcomes per group}}", color = text_color).move_to(t3.get_center())
-
-        tdiv7 = Tex(r"{{$7 \cdot 6 \cdot 5\cdot 4 \cdot 3 \cdot 2$}}{{$\;\mid\;$}}{{$ s^7$}}", color = text_color).move_to(tdiv.get_center())
-        t47 = Tex(r"{{$2, 3, 5, 7$}}{{$\;\mid\;$}}{{$ s$}}", color = text_color).move_to(t4.get_center())
-        t57= Tex(r"{{$s \ge $}}{{$\,210$}}", color = text_color).move_to(t5.get_center())
-
-        self.play(
-            AnimationGroup(
-                Transform(ttl, ttl7),
-                Transform(t1, t17),
-                Transform(t2, t27),
-                Transform(t3, t37),
-                AnimationGroup(
-                    Transform(tdiv2[0][0:4], t47[0][0:4]),
-                    Transform(tdiv2[0][-1], t47[0][4]),
-                    FadeIn(t47[0][5:]),
-                    Transform(tdiv2[1:], t47[1:]),
-                ),
-                Transform(t5, t57),
-                lag_ratio = 0.3,
-            )
-        )
-        self.wait()
 
 
 
@@ -723,7 +658,7 @@ class Counting(Scene):
         comp = []
         comp.append(Tex("${18 \choose 6}$", color = text_color).move_to(3*LEFT + 3*DOWN))
         comp.append(Tex("$\cdot {12 \choose 6}$", color = text_color).next_to(comp[0], RIGHT).shift(sht))
-        comp.append(Tex("$\cdot1$", color = text_color).next_to(comp[1], RIGHT).shift(sht))
+        comp.append(Tex("$\cdot {6 \choose 6}$", color = text_color).next_to(comp[1], RIGHT).shift(sht))
         comp.append(Tex("$=  17\,153\,136$", color = text_color).next_to(comp[2], RIGHT))
 
         for i in range(3):
@@ -777,3 +712,263 @@ class Counting(Scene):
         )
         self.wait()
          
+
+class FairExamples(Scene):
+    def construct(self):
+        self.next_section(skip_animations=False)
+        fair_dice = []
+        
+        sc = sc_examples
+        tables = []
+        for i, s in enumerate(fair_strings):
+            table = dice_table(string_to_list(s), scale=sc)
+            table.shift(pos_fst_example + (i//3)*3*DOWN + (i%3)*4*RIGHT)
+            tables.append(table)
+            # fair_dice.append(table)
+
+        tables_group = VGroup(*tables).arrange_in_grid(rows=2, buff=0.8).center()
+        tables_group.shift(
+            pos_fst_example - tables[0].get_center()
+        )
+
+        self.add(
+            tables[0]
+        )
+        self.play(
+            AnimationGroup(
+                *[FadeIn(t) for t in tables[1:]],
+                lag_ratio = 0.3
+            )
+        )
+        self.wait()  
+
+        msg = Tex("(up to permuting the dice or replacing each $x$ by $19-x$)", color = text_color).move_to(3.5*DOWN).scale(0.8)
+        self.play(
+            FadeIn(msg)
+        )    
+        self.wait(2)
+        self.play(
+            FadeOut(msg)
+        )
+        self.wait()
+        self.play(
+            Circumscribe(tables[0], color = RED)
+        )
+        self.wait()
+        self.play(
+            AnimationGroup(
+                *[FadeOut(t) for t in tables],
+            )            
+        )
+        self.wait()
+
+        # solution for four dice
+        fair_dice4 = dice_table(four_dice, scale=1.3).center()
+        self.play(
+            FadeIn(fair_dice4)
+        )
+        self.wait()
+
+        self.play(
+            *[FadeOut(line) for line in fair_dice4]
+        )
+        self.wait()
+
+
+        # smileys
+
+        smiley_table = [
+            Tex("3 players: ", color = text_color),
+            Tex("6 sides ", color = text_color),
+            ImageMobject("s1.png"),
+            Tex("4 players: ", color = text_color),
+            Tex("12 sides ", color = text_color),
+            ImageMobject("s2.png"),
+            Tex("5 players: ", color = text_color),
+            Tex("$\ge 30$ sides ", color = text_color),
+            ImageMobject("s3.png"),
+        ]
+        smiley_table = Group(*smiley_table).arrange_in_grid(rows = 3, buff = MED_LARGE_BUFF, col_widths=[2,2,2])
+
+        self.play(
+            AnimationGroup(
+                AnimationGroup(
+                    *[FadeIn(o) for o in smiley_table[0:3]],
+                ),
+                AnimationGroup(
+                    *[FadeIn(o) for o in smiley_table[3:6]],
+                ),
+                AnimationGroup(
+                    *[FadeIn(o) for o in smiley_table[6:]],
+                ),
+                lag_ratio = 0.3
+            )
+        )
+        self.wait()
+        self.play(
+            *[FadeOut(o) for o in smiley_table]
+        )
+        self.wait()
+
+        # explanation starts
+
+        sc_title = 1.5
+        ttl = Tex(r"{{three }}{{6}}{{-sided dic}}{{e}}", color = text_color).scale(2)
+        ttl2 = Tex(r"{{three }}{{5}}{{-sided dic}}{{e??}}", color = text_color).scale(2)
+        ttl3 = Tex(r"{{three }}{{5}}{{-sided dic}}{{e??}}", color = text_color).scale(sc_title).shift(2.5*UP + 1*RIGHT)
+        self.play(
+            FadeIn(ttl)
+        )
+        self.wait()
+        self.play(
+            Transform(ttl, ttl2)
+        )
+        self.wait()
+        self.play(Transform(ttl, ttl3))
+        self.wait()
+
+        t1 = Tex(r"{{$5^3=125$}}{{ possible outcomes}}", color = text_color).next_to(ttl3, DOWN).shift(DOWN)
+        t1new = Tex(r"{{$125$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center())
+        t2 = Tex(r"{{$3! = 6$ }}{{equally-sized groups}}", color = text_color).next_to(t1, DOWN)
+        t3 = Tex(r"{{$\frac{125}{6}$}}{{ outcomes per group}}", color = text_color).next_to(t2, DOWN)
+        t3new = Tex(r"{{$20.833\dots$}}{{ outcomes per group}}", color = text_color).move_to(t3.get_center())
+
+        bubble, cent = create_bubble(t1.get_left()+ 1.5*LEFT, scale = 1.3, color = text_color, length_scale = 1.2)
+        cube = create_cube(cent, scale = 0.6, color = text_color)
+        self.play(
+            FadeIn(t1),
+            *[FadeIn(b) for b in bubble],
+            *[FadeIn(c) for c in cube]
+        )
+        self.wait()
+
+        self.play(
+            FadeIn(t2),
+            *[FadeOut(c) for c in cube],
+        )
+        self.play(
+            *[b.animate.shift((t2.get_center() - t1.get_center())[1]*UP) for b in bubble]
+        )
+
+        strs = [
+            r"$A<B<C$",
+            r"$A<C<B$",
+            r"$B<A<C$",
+            r"$B<C<A$",
+            r"$C<A<B$",
+            r"$C<B<A$",
+        ]
+        strs_tex = [
+            Tex(s, color = c).scale(0.5) for s,c in zip(strs, colors[0:6])
+        ]
+        strs_table = VGroup(*strs_tex).arrange_in_grid(rows=3, buff=0.2)
+        newcent = cent + (t2.get_center() - t1.get_center())[1]*UP + 0.7*UP + 0.1*LEFT
+        strs_table.shift(newcent)
+
+        self.play(
+            *[FadeIn(s) for s in strs_table]
+        )
+        self.wait()
+
+        self.play(
+            FadeIn(t3),
+            *[FadeOut(o) for o in strs_tex + bubble]
+        )
+        self.wait()
+
+        self.play(
+            Transform(t3, t3new),
+        )
+        self.wait()
+
+        ttl5 = Tex(r"{{five }}{{$s$}}{{-sided dic}}{{e}}", color = text_color).scale(sc_title).move_to(ttl3.get_center()).shift(1*LEFT)
+        t15 = Tex(r"{{$s^5$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center()).shift(1*LEFT)
+        t15u = Tex(r"{{\_ }}{{ possible outcomes}}", color = text_color).move_to(t1.get_center()).shift(1*LEFT)
+        t25 = Tex(r"{{$5!$ }}{{equally-sized groups}}", color = text_color).move_to(t2.get_center()).shift(1*LEFT)
+        t25u = Tex(r"{{\_ }}{{equally-sized groups}}", color = text_color).move_to(t2.get_center()).shift(1*LEFT)
+        t35 = Tex(r"{{$\frac{s^5}{5!}$}}{{ outcomes per group}}", color = text_color).move_to(t3.get_center()).shift(1*LEFT)
+        t35u = Tex(r"{{\_ }}{{ outcomes per group}}", color = text_color).move_to(t3.get_center()).shift(1*LEFT)
+
+        tdiv = Tex(r"{{$5!$}}{{$\mid$}}{{$ s^5$}}", color = text_color).next_to(t2, DOWN).shift(1*LEFT)
+        tdiv2 = Tex(r"{{$2\cdot 3 \cdot 4 \cdot 5$}}{{$\;\mid\;$}}{{$ s^5$}}", color = text_color).move_to(tdiv.get_center())
+        t4 = Tex(r"{{$2, 3, 5$}}{{$\;\mid\;$}}{{$ s$}}", color = text_color).next_to(tdiv2, DOWN).shift(0.5*DOWN)
+        tdiv2.move_to(t4.get_center())
+        t5 = Tex(r"{{$s \ge $}}{{$\,2 \cdot 3 \cdot 5$}}", color = text_color).next_to(t4, DOWN)
+        t52= Tex(r"{{$s \ge $}}{{$\,30$}}", color = text_color).move_to(t5.get_center())
+
+        self.play(
+            Transform(ttl, ttl5),
+            Transform(t1, t15u),
+            Transform(t2, t25u),
+            Transform(t3, t35u),
+        )
+        self.wait()
+        self.play(
+            Circumscribe(ttl[1], color =  RED)
+        )
+        self.wait()
+        self.play(
+            Transform(t1, t15)
+        )
+        self.wait()
+        self.play(
+            Transform(t2, t25)
+        )
+        self.wait()
+        self.play(
+            Transform(t3, t35)
+        )
+        self.wait()
+        self.play(
+            FadeIn(tdiv2)
+        )
+        self.wait()
+        
+        self.play(
+            Transform(tdiv2[0][0:4], t4[0][0:4]),
+            FadeOut(tdiv2[0][4:6]),
+            Transform(tdiv2[0][-1], t4[0][-1]),
+            Transform(tdiv2[1:], t4[1:])
+        )
+        self.wait()
+        self.wait()
+        self.play(
+            FadeIn(t5)
+        )
+        self.wait()
+        self.play(
+            Transform(t5, t52)
+        )
+        self.wait()
+
+
+
+        #to same pro sedm
+
+        ttl7 = Tex(r"{{seven }}{{$s$}}{{-sided dic}}{{e}}", color = text_color).scale(sc_title).move_to(ttl3.get_center()).shift(1*LEFT)
+        t17 = Tex(r"{{$s^7$}}{{ possible outcomes}}", color = text_color).move_to(t1.get_center())
+        t27 = Tex(r"{{$7!$ }}{{equally-sized groups}}", color = text_color).move_to(t2.get_center())
+        t37 = Tex(r"{{$\frac{s^7}{7!}$}}{{ outcomes per group}}", color = text_color).move_to(t3.get_center())
+
+        tdiv7 = Tex(r"{{$7 \cdot 6 \cdot 5\cdot 4 \cdot 3 \cdot 2$}}{{$\;\mid\;$}}{{$ s^7$}}", color = text_color).move_to(tdiv.get_center())
+        t47 = Tex(r"{{$2, 3, 5, 7$}}{{$\;\mid\;$}}{{$ s$}}", color = text_color).move_to(t4.get_center())
+        t57= Tex(r"{{$s \ge $}}{{$\,210$}}", color = text_color).move_to(t5.get_center())
+
+        self.play(
+            AnimationGroup(
+                Transform(ttl, ttl7),
+                Transform(t1, t17),
+                Transform(t2, t27),
+                Transform(t3, t37),
+                AnimationGroup(
+                    Transform(tdiv2[0][0:4], t47[0][0:4]),
+                    Transform(tdiv2[0][-1], t47[0][4]),
+                    FadeIn(t47[0][5:]),
+                    Transform(tdiv2[1:], t47[1:]),
+                ),
+                Transform(t5, t57),
+                lag_ratio = 0.3,
+            )
+        )
+        self.wait()
+
