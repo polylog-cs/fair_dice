@@ -49,6 +49,8 @@ four_dice = [
     [1, 6, 11, 16, 23, 24, 25, 26, 33, 38, 43, 48],
     [2, 5, 12, 15, 19, 22, 27, 30, 34, 37, 44, 47],
 ]
+musical_scale = [0, 2, 4, 7, 9, 12]  # major pentatonic
+# musical_scale = [0, 2, 4, 5, 7, 9, 11, 12]  # major scale
 
 colors = [GREEN, CYAN, BLUE, VIOLET, MAGENTA, RED, ORANGE] # TODO restrict to 6 colors
 text_color = GRAY
@@ -266,8 +268,9 @@ class FairString(FairBase):
                                 self.letters[i].animate.set_color(highlight_color),
                                 self.letters[j].animate.set_color(highlight_color)
                             ]
+                        note = musical_scale[mi]
                         scene.add_sound(
-                            f"audio/bfs/bfs_{mi:03d}"
+                            f"audio/bfs/bfs_{note:03d}"
                         )
                         scene.play(
                             AnimationGroup(
@@ -335,8 +338,9 @@ class FairString(FairBase):
                                 flying_letter2 = self.letters[j].copy().set_color(flying_color)
                                 flying_letter3 = self.letters[k].copy().set_color(flying_color)
                                 end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
+                                note = musical_scale[mi]
                                 scene.add_sound(
-                                    f"audio/bfs/bfs_{mi:03d}"
+                                    f"audio/bfs/bfs_{note:03d}"
                                 )       
                                 scene.play(
                                     AnimationGroup(
@@ -370,8 +374,9 @@ class FairString(FairBase):
                                     flying_letter2 = self.letters[j].copy().set_color(flying_color)
                                     flying_letter3 = self.letters[k].copy().set_color(flying_color)
                                     end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
+                                    note = musical_scale[mi]
                                     scene.add_sound(
-                                        f"audio/bfs/bfs_{mi:03d}"
+                                        f"audio/bfs/bfs_{note:03d}"
                                     )
                                     scene.play(
                                         AnimationGroup(
@@ -470,6 +475,11 @@ class FairString(FairBase):
     def add(self, sp):
         self.letters += sp.letters
         self.str += sp.str
+
+
+def random_click_file():
+	return f"audio/click/click_{random.randint(0, 3)}.wav"
+
 
 def create_bubble(pos, scale = 1.0, color = text_color, length_scale = 1):
     scale = scale / 200.0
