@@ -371,9 +371,20 @@ class FairString(FairBase):
                                 counter_changes_to_do = [0]*len(self.counters)
                             cnt += 1
         if counter_changes_to_do != [0]*len(self.counters):
+            anims = []
             for it in range(len(self.counters)):
-                self.counters[it].increment_value(counter_changes_to_do[it])
-                scene.add(self.counters[it])
+                anims.append(
+                    self.counters[it].animate.increment_value(counter_changes_to_do[it])
+                )
+
+            anims += [
+                underscore1.animate.move_to(self.letters[lasti].get_center() + under_shift * scale),
+                underscore2.animate.move_to(self.letters[lastj].get_center() + under_shift * scale),
+                underscore3.animate.move_to(self.letters[lastk].get_center() + under_shift * scale),
+            ]
+
+            scene.play(*anims, run_time=run_time_current)
+            scene.wait()
 
         if beg == False:
             # if fst_cheap == True:
