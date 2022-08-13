@@ -266,9 +266,7 @@ class FairString(FairBase):
                                 self.letters[i].animate.set_color(highlight_color),
                                 self.letters[j].animate.set_color(highlight_color)
                             ]
-                        scene.add_sound(
-                            f"audio/bfs/bfs_{mi:03d}"
-                        )
+                        scene.add_sound(random_click_file())
                         scene.play(
                             AnimationGroup(
                                 *anims,
@@ -289,7 +287,10 @@ class FairString(FairBase):
             )
         return cleanup_anims
 
-    def find_triplets(self, scene, match_set, ranges = [None, None, None], scale = 1, cheap_after_steps = None, skip_factor = 1, flying_color = text_color):
+    def find_triplets(
+        self, scene, match_set, ranges = [None, None, None], scale = 1, cheap_after_steps = None, skip_factor = 1, flying_color = text_color,
+        sec_per_step_1=0.3, sec_per_step_2=0.15,
+    ):
         underscore1 = Line(start = -0.1*RIGHT + under_shift, end = 0.1*RIGHT + under_shift, color = text_color)
         underscore2 = underscore1.copy()
         underscore3 = underscore1.copy()
@@ -307,9 +308,30 @@ class FairString(FairBase):
                 for k in range(max(j+1, ranges[2][0]), ranges[2][1]):
                     for mi in match_set:
                         if self.str[i] == self.counter_letters[mi][0] and self.str[j] == self.counter_letters[mi][1] and self.str[k] == self.counter_letters[mi][2]:
+                            play_anim = False
+                            run_time_current = sec_per_step_1
+                            counter_changes_to_do[mi] += 1
                             lasti, lastj, lastk = i,j,k
+
                             if cheap_after_steps == None or cheap_after_steps > cnt:
-                                if beg == True:
+                                play_anim = True
+                                
+                            else: #cheap steps, only with probability prob
+                                # if fst_cheap == True:
+                                #     fst_cheap = False
+                                #     scene.play(
+                                #         Uncreate(underscore2),
+                                #         Uncreate(underscore3)
+                                #     )
+                                run_time_current = sec_per_step_2
+                                skip_cnt += 1
+                                if skip_cnt == skip_factor:
+                                    play_anim = True
+
+                            if play_anim:
+                                skip_cnt = 0
+
+                                if beg:
                                     underscore1.move_to(self.letters[i].get_center() + under_shift * scale)
                                     underscore2.move_to(self.letters[j].get_center() + under_shift * scale)
                                     underscore3.move_to(self.letters[k].get_center() + under_shift * scale)
@@ -319,7 +341,7 @@ class FairString(FairBase):
                                             Create(underscore2),
                                             Create(underscore3)
                                         ),
-                                        run_time = 0.1
+                                        run_time = 0.2 * run_time_current
                                     )
                                     beg = False
                                 else:
@@ -328,77 +350,40 @@ class FairString(FairBase):
                                             underscore1.animate.move_to(self.letters[i].get_center() + under_shift * scale),
                                             underscore2.animate.move_to(self.letters[j].get_center() + under_shift * scale),
                                             underscore3.animate.move_to(self.letters[k].get_center() + under_shift * scale),
-                                            run_time = 0.1
+                                            run_time = 0.2 * run_time_current
                                         )
                                     )
+
                                 flying_letter1 = self.letters[i].copy().set_color(flying_color)
                                 flying_letter2 = self.letters[j].copy().set_color(flying_color)
                                 flying_letter3 = self.letters[k].copy().set_color(flying_color)
                                 end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
-                                scene.add_sound(
-                                    f"audio/bfs/bfs_{mi:03d}"
-                                )       
+                                scene.add_sound(random_click_file())
                                 scene.play(
                                     AnimationGroup(
-                                        self.counters[mi].animate.increment_value(1),
+                                        *[self.counters[it].animate.increment_value(counter_changes_to_do[it]) for it in range(len(self.counters))],
                                         Transform(flying_letter1, end_dot),
                                         Transform(flying_letter2, end_dot),
                                         Transform(flying_letter3, end_dot),
-                                        run_time = 0.5
+                                        run_time = run_time_current
                                     )
                                 )
-                            else: #cheap steps, only with probability prob
-                                # if fst_cheap == True:
-                                #     fst_cheap = False
-                                #     scene.play(
-                                #         Uncreate(underscore2),
-                                #         Uncreate(underscore3)
-                                #     )
-                                counter_changes_to_do[mi] += 1
-                                skip_cnt += 1
-                                if skip_cnt == skip_factor:
-                                    skip_cnt = 0
-                                    scene.play(
-                                        AnimationGroup(
-                                            underscore1.animate.move_to(self.letters[i].get_center() + under_shift * scale),
-                                            underscore2.animate.move_to(self.letters[j].get_center() + under_shift * scale),
-                                            underscore3.animate.move_to(self.letters[k].get_center() + under_shift * scale),
-                                            run_time = 0.1
-                                        )
-                                    )
-                                    flying_letter1 = self.letters[i].copy().set_color(flying_color)
-                                    flying_letter2 = self.letters[j].copy().set_color(flying_color)
-                                    flying_letter3 = self.letters[k].copy().set_color(flying_color)
-                                    end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
-                                    scene.add_sound(
-                                        f"audio/bfs/bfs_{mi:03d}"
-                                    )
-                                    scene.play(
-                                        AnimationGroup(
-                                            *[self.counters[it].animate.increment_value(counter_changes_to_do[it]) for it in range(len(self.counters))],
-                                            Transform(flying_letter1, end_dot),
-                                            Transform(flying_letter2, end_dot),
-                                            Transform(flying_letter3, end_dot),
-                                            run_time = 0.5
-                                        )
-                                    )
-                                    counter_changes_to_do = [0]*len(self.counters)
+                                counter_changes_to_do = [0]*len(self.counters)
                             cnt += 1
-        
         if counter_changes_to_do != [0]*len(self.counters):
             anims = []
             for it in range(len(self.counters)):
                 anims.append(
                     self.counters[it].animate.increment_value(counter_changes_to_do[it])
                 )
+
             anims += [
                 underscore1.animate.move_to(self.letters[lasti].get_center() + under_shift * scale),
                 underscore2.animate.move_to(self.letters[lastj].get_center() + under_shift * scale),
                 underscore3.animate.move_to(self.letters[lastk].get_center() + under_shift * scale),
             ]
 
-
-            scene.play(*anims)
+            scene.play(*anims, run_time=run_time_current)
             scene.wait()
 
         if beg == False:
@@ -470,6 +455,11 @@ class FairString(FairBase):
     def add(self, sp):
         self.letters += sp.letters
         self.str += sp.str
+
+
+def random_click_file():
+	return f"audio/click/click_{random.randint(0, 3)}.wav"
+
 
 def create_bubble(pos, scale = 1.0, color = text_color, length_scale = 1):
     scale = scale / 200.0
