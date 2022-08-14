@@ -1370,26 +1370,33 @@ class Scrolling(Scene):
         
         #####
         L = 100
-        up_shift = 3*UP
+        up_shift = 10*UP
         #####
 
         test = 0
         
         f = open("ABCD.txt", "r")
-        str_s = ""
+        str_s = []
         for _ in range(L):
-            str_s += f.readline().strip()
-        str = Tex(str_s, color = text_color).scale(sc)
+            str_s.append(f.readline().strip())
+        str = [
+            Tex(s, color = text_color).scale(sc)
+            for s in str_s
+        ]
         print("str")
 
         for i in range(L):
-            for j in range(4*24):
-                str[0][4*24*i + j].move_to(6.7 * LEFT + 3.8*UP + test*5*DOWN + i*0.2*DOWN + j * default_sep * sc * RIGHT)
+            #str[0][4*24*i + j].move_to(6.7 * LEFT + 3.8*UP + test*5*DOWN + i*0.2*DOWN + j * default_sep * sc * RIGHT)
+            dot = Tex("A").move_to(6.7 * LEFT + 3.8*UP + test*5*DOWN + i*0.2*DOWN )
+            str[i][0].move_to(dot.get_center()).align_to(dot, LEFT)
+            for j in range(1, 4*24):
+                str[i][0][j].move_to(str[i][0][j-1].get_center() + default_sep * sc * RIGHT)
+
         print("positions")
         self.add(
-            str
+            *str
         )
-        return
+        #return
 
         # for _ in range(L):
         #     letters = []
@@ -1424,7 +1431,7 @@ class Scrolling(Scene):
         self.play(
             AnimationGroup(
                 AnimationGroup(
-                    str.animate.shift(up_shift),
+                    *[s.animate.shift(up_shift) for s in str],
                     run_time = 30
                 ),
                 Succession(
