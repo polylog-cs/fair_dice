@@ -1,12 +1,35 @@
 from util import *
 
-class Bubble(Scene):
+
+
+class Thumbnail(ThreeDScene):
     def construct(self):
-        cube = create_cube(0*LEFT)
+        ball = Sphere(center = 4.5*LEFT + 1.5*UP, radius = 2, resolution = (10,10)).set_color(BLUE)
         self.add(
-            *cube
+            ball
         )
-        self.wait(10)
+        sc = 4.5
+        txt = [
+            Tex(r"this is a", color = text_color).scale(sc),
+            Tex(r"$10^{60}$-sided die", color = text_color).scale(sc)
+        ] 
+        txt = Group(*txt).arrange(DOWN).shift(0*RIGHT + 1.5*DOWN)
+        txt[0].align_to(txt[1], RIGHT)
+
+        arrow = ImageMobject("sipka.png").move_to(0*RIGHT + 1.5*UP)
+
+        # arrow = Arrow(
+        #     start = 1*RIGHT + 1 * DOWN,
+        #     end = 1*LEFT + 1*UP,
+        #     max_stroke_width_to_length_ratio=200,
+        #     stroke_width = 10,
+        #     color = text_color
+        # )
+
+        self.add_fixed_in_frame_mobjects(
+            txt[1], 
+            arrow
+        )
 
 class Polylog(Scene):
     def construct(self):
@@ -555,7 +578,11 @@ class DiceCube(ThreeDScene):
         
         
         self.wait(40 - T)
-        
+        self.play(
+            *[FadeOut(o) for o in self.mobjects]
+        )
+        return
+
         s = fair_strings[0]
         ntable = dice_table(string_to_list(s), scale=1, col_widths = [0.4]*7)
         ntable.shift(2*LEFT)
@@ -577,6 +604,7 @@ class DiceCube(ThreeDScene):
             FadeOut(skeleton),
             FadeOut(calculation_text),
             *[FadeOut(l) for l in order_labels],
+            *[FadeOut(l) for l in labels[0] + labels[1] + labels[2]],
             *[FadeOut(cube) for cube in all_cubes],
             *move_anims,
         )
