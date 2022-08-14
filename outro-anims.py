@@ -109,10 +109,10 @@ class Thanks(Scene):
             "Big thanks to",
             "-- the organizers of SoME2,",
             "-- Manim Community,",
-            "-- Bernhard Haeupler, Florian Haeupler, Richard Hladík,",
-            "Filip Hlásek, Jan Petr, Hanka Rozhoňová, Vojtěch Volhejn", 
-            "Tung Anh Vu",
-            "See video description for links, problems, etc. :)"
+            "-- Martin Dvořák, Bernhard Haeupler, Florian Haeupler, Richard Hladík,",
+            "Filip Hlásek, Aranka Hrušková, Jan Petr, Hanka Rozhoňová, Vojtěch Volhejn", 
+            "Tung Anh Vu, Vilas Winstein",
+            "See video description for links, and a bit more related math :)"
         ]
         t = [
             Tex(ss, color = text_color) for ss in s

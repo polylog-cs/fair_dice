@@ -554,7 +554,7 @@ class DiceCube(ThreeDScene):
         # self.play(*[FadeOut(text) for text in btw_text_list])
         
         
-        self.wait(30 - T)
+        self.wait(40 - T)
         
         s = fair_strings[0]
         ntable = dice_table(string_to_list(s), scale=1, col_widths = [0.4]*7)
@@ -801,7 +801,7 @@ class FairExamples(Scene):
                 AnimationGroup(
                     *[FadeIn(o) for o in smiley_table[6:]],
                 ),
-                lag_ratio = 0.3
+                lag_ratio = 0.6
             )
         )
         self.wait()

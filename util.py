@@ -50,7 +50,9 @@ four_dice = [
     [2, 5, 12, 15, 19, 22, 27, 30, 34, 37, 44, 47],
 ]
 
-colors = [GREEN, CYAN, BLUE, VIOLET, MAGENTA, RED, ORANGE] # TODO restrict to 6 colors
+
+colors = [RED, MAGENTA, VIOLET, BLUE, CYAN, GREEN]
+
 text_color = GRAY
 background_color = config.background_color
 
@@ -142,13 +144,13 @@ class FairBase:
         for i, (name, pos) in enumerate(zip(counter_names, positions)):
             counter = Integer(
                     number = 0,
-                    color = text_color
+                    color = colors[i]
                 ).move_to(
                     pos
                 )
             counter_title = Tex(
                 name,
-                color = text_color
+                color = colors[i]
             ).move_to(counter.get_center()).next_to(counter, DOWN)
 
             #tracker = ValueTracker(0)
@@ -252,8 +254,8 @@ class FairString(FairBase):
                                     run_time = 0.1
                                 )
                             )
-                        flying_letter1 = self.letters[i].copy().set_color(flying_color)
-                        flying_letter2 = self.letters[j].copy().set_color(flying_color)
+                        flying_letter1 = self.letters[i].copy().set_color(colors[mi])
+                        flying_letter2 = self.letters[j].copy().set_color(colors[mi])
 
                         end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
                         anims = [
@@ -289,7 +291,7 @@ class FairString(FairBase):
 
     def find_triplets(
         self, scene, match_set, ranges = [None, None, None], scale = 1, cheap_after_steps = None, skip_factor = 1, flying_color = text_color,
-        sec_per_step_1=0.3, sec_per_step_2=0.15,
+        sec_per_step_1=0.3, sec_per_step_2=0.15, anims_list = None
     ):
         underscore1 = Line(start = -0.1*RIGHT + under_shift, end = 0.1*RIGHT + under_shift, color = text_color)
         underscore2 = underscore1.copy()
@@ -354,9 +356,16 @@ class FairString(FairBase):
                                         )
                                     )
 
-                                flying_letter1 = self.letters[i].copy().set_color(flying_color)
-                                flying_letter2 = self.letters[j].copy().set_color(flying_color)
-                                flying_letter3 = self.letters[k].copy().set_color(flying_color)
+                                if cnt == 9 and anims_list != None:
+                                    scene.wait()
+                                    for anims in anims_list:
+                                        scene.play(*anims)
+                                        scene.wait()
+
+
+                                flying_letter1 = self.letters[i].copy().set_color(colors[mi])
+                                flying_letter2 = self.letters[j].copy().set_color(colors[mi])
+                                flying_letter3 = self.letters[k].copy().set_color(colors[mi])
                                 end_dot = Dot(radius = 0.00, color = background_color).move_to(self.counters[mi].get_center())
                                 scene.add_sound(random_click_file())
                                 scene.play(

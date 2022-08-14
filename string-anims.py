@@ -169,16 +169,16 @@ class Equivalence(Scene):
         self.play(
             Succession(
                 AnimationGroup(
-                    Create(rec_highlights[2]),
-                    Create(rec_highlights2[2]),
-                ),
-                AnimationGroup(
                     Create(rec_highlights[0]),
                     Create(rec_highlights2[0]),
                 ),
                 AnimationGroup(
                     Create(rec_highlights[1]),
                     Create(rec_highlights2[1]),
+                ),
+                AnimationGroup(
+                    Create(rec_highlights[2]),
+                    Create(rec_highlights2[2]),
                 ),
             )
         )
@@ -234,6 +234,49 @@ class Construction1(Scene):
                 [['A', 'B', 'C'], ['A', 'C', 'B'], ['B', 'A', 'C'], ['B', 'C', 'A'], ['C', 'A', 'B'], ['C', 'B', 'A']]
             )
             self.wait()
+
+            # the table appears and there is a small animation inside finding triplets
+
+            # table = dice_table(string_to_list(fair_strings[0]), scale=1, col_widths = [0.4]*7)
+            # table.shift(2.5*UP)
+            # anims_list = []
+            # anims_list.append(
+            #     [FadeIn(table)]
+            # )
+            # nums = [
+            #     Tex(str(i+1), color = text_color).scale(0.8).next_to(s.letters[i], UP)
+            #     for i in range(18)
+            # ]
+            # for i in range(18):
+            #     nums[i].align_to(nums[0], UP)
+
+            
+
+            # anims_list.append(
+            #     [FadeIn(nums[0]), FadeIn(nums[2]), FadeIn(nums[14])]
+            # )
+            # #0, 2, 14
+            # # anims_list.append(
+            # #     [FadeOut(n) for n in nums[1:2] + nums[3:14] + nums[15:]]
+            # # )
+            # anims_list.append(
+            #     [
+            #         Transform(nums[0], Tex(str(0+1), color = colors[1]).next_to(s.letters[0], UP).move_to(table[0*7 + 0 + 1].get_center())),
+            #         Transform(nums[2], Tex(str(2+1), color = colors[1]).next_to(s.letters[2], UP).move_to(table[2*7 + 0 + 1].get_center())),
+            #         Transform(nums[14], Tex(str(14+1), color = colors[1]).next_to(s.letters[14], UP).move_to(table[1*7 + 4 + 1].get_center())),
+            #     ]
+            # )
+
+            # anims_list.append(
+            #     [
+            #         FadeOut(table),
+            #         FadeOut(nums[0]),
+            #         FadeOut(nums[2]),
+            #         FadeOut(nums[14]),
+            #     ]
+            # )
+
+            #cheap_after_steps musi byt > 10
             s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=7, skip_factor=6)
             self.wait()
             self.play(
@@ -363,17 +406,29 @@ class Construction1(Scene):
         # [nahoře ve stringu se udělají mezery mezi částmi, pak se udělá první výpočet, na nadčárami je napsáno A a B]
 
         self.next_section(skip_animations = skip)
-        
+
         self.play(
-            s.counters[0].animate.set_color(RED),
-            s.counter_titles[0].animate.set_color(RED),
+            *[
+                s.counters[i].animate.set_color(text_color)
+                for i in [1, 2, 3, 5]
+            ],
+            *[
+                s.counter_titles[i].animate.set_color(text_color)
+                for i in [1, 2, 3, 5]
+            ],
         )
         self.wait()
-        self.play(
-            s.counters[4].animate.set_color(BLUE),
-            s.counter_titles[4].animate.set_color(BLUE),
-        )
-        self.wait()
+
+        # self.play(
+        #     s.counters[0].animate.set_color(RED),
+        #     s.counter_titles[0].animate.set_color(RED),
+        # )
+        # self.wait()
+        # self.play(
+        #     s.counters[4].animate.set_color(colors[4]),
+        #     s.counter_titles[4].animate.set_color(colors[4]),
+        # )
+        # self.wait()
 
         overscore1 = Line(start = -0.5*RIGHT + over_shift, end = 0.5*RIGHT + over_shift, color = text_color)
         overscore2 = overscore1.copy()
@@ -382,12 +437,12 @@ class Construction1(Scene):
         overletter1 = Tex("A", color = RED).move_to(overscore1.get_center()).next_to(overscore1, UP)
         overletter2 = Tex("B", color = RED).move_to(overscore2.get_center()).next_to(overscore2, UP)
         
-        for ind, col in [(0, RED), (4, BLUE)]:
+        for ind, col in [(0, RED), (4, colors[4])]:
             if ind == 4:
                 overscore1.move_to(s.letters[1].get_center() + over_shift)
                 overscore2.move_to(s.letters[1+3].get_center() + over_shift)
-                overletter1 = Tex("C", color = BLUE).move_to(overscore1.get_center()).next_to(overscore1, UP)
-                overletter2 = Tex("A", color = BLUE).move_to(overscore2.get_center()).next_to(overscore2, UP)
+                overletter1 = Tex("C", color = colors[4]).move_to(overscore1.get_center()).next_to(overscore1, UP)
+                overletter2 = Tex("A", color = colors[4]).move_to(overscore2.get_center()).next_to(overscore2, UP)
                 
             #pairs from different parts
             self.next_section(skip_animations = skip)
@@ -432,7 +487,7 @@ class Construction1(Scene):
             overscore1.move_to(s.letters[1].get_center() + over_shift)
             overletter1 = Tex("AB", color = RED).move_to(overscore1.get_center()).next_to(overscore1, UP)
             if ind == 4:
-                overletter1 = Tex("CA", color = BLUE).move_to(overscore1.get_center()).next_to(overscore1, UP)
+                overletter1 = Tex("CA", color = colors[4]).move_to(overscore1.get_center()).next_to(overscore1, UP)
             cleanup_anims = []
 
             for i in range(0, 6):
@@ -469,7 +524,7 @@ class Construction1(Scene):
         self.wait()
         
         self.play(
-            *[s.letters[pos].animate.set_color(BLUE) for pos in blue_letters]
+            *[s.letters[pos].animate.set_color(colors[4]) for pos in blue_letters]
         )
         self.wait()
         self.play(
@@ -481,6 +536,19 @@ class Construction1(Scene):
         # In general, we can see that it does not matter how you order the six triplets, you will always get the same counts of ABs, BCs, and ACs. 
         # [zase se přehází string, pak znovu celý výpočet]
         self.next_section(skip_animations = skip)
+        self.play(
+            *[
+                s.counters[i].animate.set_color(colors[i])
+                for i in [1, 2, 3, 5]
+            ],
+            *[
+                s.counter_titles[i].animate.set_color(colors[i])
+                for i in [1, 2, 3, 5]
+            ],
+        )
+        self.wait()
+
+
         ps = [
             [4, 3, 1, 2, 5, 0],
             [2, 3, 0, 4, 5, 1],
@@ -655,16 +723,19 @@ class Construction2(Scene):
         # [circumbscribe the two parts]
 
         # first some examples of how it can look like
+
         self.play(
-            base.counters[0].animate.set_color(RED), 
-            base.counter_titles[0].animate.set_color(RED)
+            *[
+                base.counters[i].animate.set_color(text_color)
+                for i in [1, 2, 3, 5]
+            ],
+            *[
+                base.counter_titles[i].animate.set_color(text_color)
+                for i in [1, 2, 3, 5]
+            ],
         )
         self.wait()
-        self.play(
-            base.counters[4].animate.set_color(BLUE), 
-            base.counter_titles[4].animate.set_color(BLUE)
-        )
-        self.wait()
+
         self.play(
             Circumscribe(Group(*[base.counters[0], base.counter_titles[0]]), color = RED)
         )
@@ -848,7 +919,7 @@ class Construction2(Scene):
         )
         self.wait()
         self.play(
-            Circumscribe(Group(*[base.counters[4], base.counter_titles[4]]), color = BLUE)
+            Circumscribe(Group(*[base.counters[4], base.counter_titles[4]]), color = colors[4])
         )
         self.wait()
 
@@ -896,10 +967,10 @@ class Construction2(Scene):
 
         newAB = Tex("{{\#AB}}{{ = }}{{\#CA}}", color = text_color).move_to(overtext1.get_center())
         newAB[0].set_color(RED)
-        newAB[2].set_color(BLUE)
+        newAB[2].set_color(colors[4])
         newC = Tex("{{\#C}}{{ = }}{{\#B}}", color = text_color).move_to(overtext2.get_center())
         newC[0].set_color(RED)
-        newC[2].set_color(BLUE)
+        newC[2].set_color(colors[4])
         
 
         self.play(
@@ -912,13 +983,13 @@ class Construction2(Scene):
         )
         self.wait()
         self.play(
-            base.counters[4].animate.set_color(BLUE),
-            base.counter_titles[4].animate.set_color(BLUE)
+            base.counters[4].animate.set_color(colors[4]),
+            base.counter_titles[4].animate.set_color(colors[4])
         )
         self.wait()
 
         self.play(
-            Circumscribe(Group(base.counters[4], base.counter_titles[4]), color = BLUE),
+            Circumscribe(Group(base.counters[4], base.counter_titles[4]), color = colors[4]),
         )
 
         # self.play(
@@ -927,7 +998,7 @@ class Construction2(Scene):
         # )
         # self.wait()
 
-        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=10, skip_factor = 3, flying_color = BLUE)
+        base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*j, 18*(j+1)]] , scale = sc, cheap_after_steps=10, skip_factor = 3, flying_color = colors[4])
         self.wait()
 
 
@@ -1039,7 +1110,7 @@ class Construction2(Scene):
             n3 = Tex("\#C = \#B", color = text_color).move_to(overtext3.get_center())
             for n in [n1, n2, n3]:
                 n[0][0:2].set_color(RED)
-                n[0][3:].set_color(BLUE)
+                n[0][3:].set_color(colors[4])
 
             self.play(
                 Transform(overtext1, n1),
@@ -1055,7 +1126,7 @@ class Construction2(Scene):
             # )
             # self.wait()
 
-            base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 60, flying_color = BLUE)
+            base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*j, 18*(j+1)], [18*k, 18*(k+1)]] , scale = sc, cheap_after_steps=5, skip_factor = 60, flying_color = colors[4])
             self.wait()
 
             self.play(
@@ -1141,7 +1212,7 @@ class Construction2(Scene):
         )
         overtext1 = Tex(
             "CAB",
-            color = BLUE
+            color = colors[4]
         ).move_to(
             overscore1.get_center()
         ).next_to(
@@ -1163,7 +1234,7 @@ class Construction2(Scene):
                     overtext1.animate.shift(shft)
                 )
             partial_counters.append(
-                Integer(0, color = BLUE).move_to(
+                Integer(0, color = colors[4]).move_to(
                     parts[i].letters[17].get_center() + 0.5*UP + 0.3*LEFT
                 )
             )
@@ -1176,12 +1247,12 @@ class Construction2(Scene):
             self.play(
                 FadeIn(partial_counters[i])
             )
-            base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*i, 18*(i+1)]] , scale = sc, cheap_after_steps=3, skip_factor = 7, flying_color=BLUE)
+            base.find_triplets(self, [4], ranges = [[18*i, 18*(i+1)], [18*i, 18*(i+1)], [18*i, 18*(i+1)]] , scale = sc, cheap_after_steps=3, skip_factor = 7, flying_color=colors[4])
             self.wait()
             self.add(
                 Integer(
                     partial_counters[i].get_value(),
-                    color = BLUE
+                    color = colors[4]
                 ).move_to(partial_counters[i].get_center())
             )
             self.remove(partial_counters[i])
@@ -1297,47 +1368,64 @@ class Scrolling(Scene):
     def construct(self):
         sc = 0.35
         
-        #TODO change
-        L = 50
-        #L = 1
+        #####
+        L = 100
         up_shift = 3*UP
+        #####
+
         test = 0
         
-        strings = []
         f = open("ABCD.txt", "r")
+        str_s = ""
         for _ in range(L):
-            letters = []
-            line = f.readline().strip()
-            for i in range(len(line)):
-                letters.append(
-                    Tex(line[i], color = text_color).scale(sc)
-                )
-            strings.append(letters)
+            str_s += f.readline().strip()
+        str = Tex(str_s, color = text_color).scale(sc)
+        print("str")
 
         for i in range(L):
-            for j in range(len(strings[i])):
-                if j == 0:
-                    if i == 0:
-                        strings[i][0].move_to(6.7*LEFT + 3.8*UP+test*5*DOWN)
-                    else:
-                        strings[i][0].move_to(strings[i-1][0].get_center()).shift(0.2*DOWN)
-                else:
-                    strings[i][j].move_to(strings[i][j-1].get_center()).shift(default_sep*sc*RIGHT)
-
-        all_letters = []
-        for str in strings:
-            all_letters += str
-
+            for j in range(4*24):
+                str[0][4*24*i + j].move_to(6.7 * LEFT + 3.8*UP + test*5*DOWN + i*0.2*DOWN + j * default_sep * sc * RIGHT)
+        print("positions")
         self.add(
-            *all_letters
+            str
         )
+        return
+
+        # for _ in range(L):
+        #     letters = []
+        #     line = f.readline().strip()
+        #     for i in range(len(line)):
+        #         letters.append(
+        #             Tex(line[i], color = text_color).scale(sc)
+        #         )
+        #     strings.append(letters)
+        # print("done")
+
+        # for i in range(L):
+        #     for j in range(len(strings[i])):
+        #         if j == 0:
+        #             if i == 0:
+        #                 strings[i][0].move_to(6.7*LEFT + 3.8*UP+test*5*DOWN)
+        #             else:
+        #                 strings[i][0].move_to(strings[i-1][0].get_center()).shift(0.2*DOWN)
+        #         else:
+        #             strings[i][j].move_to(strings[i][j-1].get_center()).shift(default_sep*sc*RIGHT)
+        # print("done")
+
+        # all_letters = []
+        # for str in strings:
+        #     all_letters += str
+
+        # self.add(
+        #     *all_letters
+        # )
 
 
         self.play(
             AnimationGroup(
                 AnimationGroup(
-                    *[l.animate.shift(up_shift) for l in all_letters],
-                    run_time = 25
+                    str.animate.shift(up_shift),
+                    run_time = 30
                 ),
                 Succession(
                     Wait(2),
@@ -1345,7 +1433,7 @@ class Scrolling(Scene):
                     Write(Tex(r"$= 4 \times 13824$ sides: ", color = DARK_GRAY).shift(1*UP).set_z_index(100).scale(2))
                 ),
                 Succession(
-                    Wait(12),
+                    Wait(15),
                     AnimationGroup(
                         Write(Tex(list_to_string(four_dice), color = BLACK).shift(3*DOWN).scale(0.8).set_z_index(100)),
                         Write(Tex(r"$48$ letters = $4 \times 12$ sides: ", color = BLACK).shift(2*DOWN).scale(1.8).set_z_index(100))
