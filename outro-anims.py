@@ -68,6 +68,9 @@ class Outro(Scene):
                 Tex(permute(s1, permutations[i]), color = text_color).move_to(t2[0][1 + 3*i].get_center())
             ])
 
+        for i in range(6):
+            self.add_sound(random_whoosh_file(), 1+ 0.15 + 0.3*i)
+
         self.play(
             Succession(
                 FadeIn(ar1),
@@ -86,6 +89,8 @@ class Outro(Scene):
                 Tex(s2, color = text_color).move_to(t2.get_center()),
                 Tex(permute(s2, permutations[i]), color = text_color).scale(sc).move_to((t3[i//3][0][18*(i%3)].get_center() + t3[i//3][0][18*((i%3)+1)-1].get_center())/2)
             ])
+        for i in range(6):
+            self.add_sound(random_whoosh_file(), 1 + 0.15 + 0.3*i)
 
         self.play(
             Succession(

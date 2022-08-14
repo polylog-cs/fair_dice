@@ -277,7 +277,7 @@ class Construction1(Scene):
             # )
 
             #cheap_after_steps musi byt > 10
-            s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=7, skip_factor=6)
+            s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=7, skip_factor=6, sound_good = "good")
             self.wait()
             self.play(
                 *[Circumscribe(counter, color = RED) for counter in s.counters]
@@ -375,7 +375,7 @@ class Construction1(Scene):
                 [['A', 'B', 'C'], ['A', 'C', 'B'], ['B', 'A', 'C'], ['B', 'C', 'A'], ['C', 'A', 'B'], ['C', 'B', 'A']]
             )
             self.wait()
-            s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=7, skip_factor=6)
+            s.find_triplets(self, [0, 1, 2, 3, 4, 5], cheap_after_steps=7, skip_factor=6, sound_good = "bad")
             self.wait()
             s.delete_counters(self)
             self.wait()
@@ -709,7 +709,7 @@ class Construction2(Scene):
 
         self.wait()
         if not skip:
-            base.find_triplets(self, [0, 1, 2, 3, 4, 5], scale = sc, cheap_after_steps=5, skip_factor=2000)
+            base.find_triplets(self, [0, 1, 2, 3, 4, 5], scale = sc, cheap_after_steps=5, skip_factor=2000, sound_good = "good")
         self.wait()
         base.clear_counters(self)
         self.wait()
@@ -1290,12 +1290,12 @@ class ConstructABCD(Scene):
             
             
         for i in range(24):
-            self.add_sound(random_whoosh_file(), time_offset=0.15)
+            self.add_sound(random_click_file(), time_offset=0.15)
             parts[i].animated_permute(self,permutations[i], scale = sc1, run_time=0.3)
         self.wait()
 
         for i in range(24):
-            self.add_sound(random_click_file(), time_offset=0.15)
+            self.add_sound(random_whoosh_file(), time_offset=0.15)
             if i == 0:
                 parts[i].animate_shift_rescale(self, 
                 6.7*LEFT + 3.8*UP - parts[i].letters[0].get_center(),
@@ -1334,14 +1334,14 @@ class ConstructABCD(Scene):
         for l, l2 in zip(base.letters, base2.letters):
             l2.scale(sc2).move_to(l.get_center()).shift(24*(parts[1].letters[0].get_center() - parts[0].letters[0].get_center()))
         for i in range(1, 24):
-            self.add_sound(random_pop_file, time_offset = 0.15 + 0.3 * (i-1))
+            self.add_sound(random_pop_file(), time_offset = 0.15 + 0.3 * (i-1))
         self.play(
             *[FadeIn(l) for l in base2.letters],
             run_time = 0.3
         )
-        self.wait()
+        self.wait(8)
         for i in range(1, 24):
-            self.add_sound(random_pop_file, time_offset = 0.15 + 0.3 * (i-1))
+            self.add_sound(random_click_file(), time_offset = 0.15 + 0.3 * (i-1))
         base2.animated_permute(self, permutations[1], scale = sc2, run_time = 0.3)        
 
         self.wait()

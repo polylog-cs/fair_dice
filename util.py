@@ -291,7 +291,7 @@ class FairString(FairBase):
 
     def find_triplets(
         self, scene, match_set, ranges = [None, None, None], scale = 1, cheap_after_steps = None, skip_factor = 1, flying_color = text_color,
-        sec_per_step_1=0.3, sec_per_step_2=0.15, anims_list = None
+        sec_per_step_1=0.3, sec_per_step_2=0.15, anims_list = None, sound_good = None
     ):
         underscore1 = Line(start = -0.1*RIGHT + under_shift, end = 0.1*RIGHT + under_shift, color = text_color)
         underscore2 = underscore1.copy()
@@ -396,7 +396,10 @@ class FairString(FairBase):
             scene.wait()
 
         if beg == False:
-            # if fst_cheap == True:
+            if sound_good == "good":
+                scene.add_sound("audio/polylog_succes.wav")
+            if sound_good == "bad":
+                scene.add_sound("audio/polylog_failure.wav")
             scene.play(
                 Uncreate(underscore1),
                 Uncreate(underscore2),
