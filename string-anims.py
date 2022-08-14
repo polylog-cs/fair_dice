@@ -1334,14 +1334,14 @@ class ConstructABCD(Scene):
         for l, l2 in zip(base.letters, base2.letters):
             l2.scale(sc2).move_to(l.get_center()).shift(24*(parts[1].letters[0].get_center() - parts[0].letters[0].get_center()))
         for i in range(1, 24):
-            self.add_sound(random_pop_file, 0.15 + 0.3 * (i-1))
+            self.add_sound(random_pop_file, time_offset = 0.15 + 0.3 * (i-1))
         self.play(
             *[FadeIn(l) for l in base2.letters],
             run_time = 0.3
         )
         self.wait()
         for i in range(1, 24):
-            self.add_sound(random_pop_file, 0.15 + 0.3 * (i-1))
+            self.add_sound(random_pop_file, time_offset = 0.15 + 0.3 * (i-1))
         base2.animated_permute(self, permutations[1], scale = sc2, run_time = 0.3)        
 
         self.wait()
@@ -1383,8 +1383,8 @@ class Scrolling(Scene):
         sc = 0.35
         
         #####
-        L = 200
-        up_shift = 40*UP
+        L = 150
+        up_shift = 20*UP
         #####
 
         test = 0
