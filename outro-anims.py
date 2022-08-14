@@ -113,17 +113,17 @@ class Thanks(Scene):
             "Big thanks to",
             "-- the organizers of SoME2,",
             "-- Manim Community,",
-            "-- Martin Dvořák, Bernhard Haeupler, Florian Haeupler, Richard Hladík,",
-            "Filip Hlásek, Aranka Hrušková, Jan Petr, Hanka Rozhoňová, Vojtěch Volhejn", 
-            "Tung Anh Vu, Vilas Winstein",
-            "See video description for links, and a bit more related math :)"
+            "-- csha, Jindra Dušek, Martin Dvořák, Bernhard Haeupler, Florian Haeupler,",
+            "Richard Hladík, Filip Hlásek, Aranka Hrušková, Jan Petr, Hanka Rozhoňová,",
+            "Jan Volhejn, Vojtěch Volhejn, Tung Anh Vu, Vilas Winstein",
+            "See video description for links, and some more related math :)",
         ]
         t = [
             Tex(ss, color = text_color) for ss in s
         ]
         # for i in range(3, len(t)):
         #     t[i].scale(0.7)
-        t[0].move_to(3*LEFT + 3*UP)
+        t[0].move_to(5*LEFT + 3*UP)
         t[1].next_to(t[0], DOWN).align_to(t[0], LEFT)
         t[2].next_to(t[1], DOWN).align_to(t[0], LEFT)
         t[3].scale(0.7).next_to(t[2], DOWN).align_to(t[0], LEFT)
