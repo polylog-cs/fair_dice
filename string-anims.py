@@ -1279,16 +1279,21 @@ class ConstructABCD(Scene):
         parts = []
         for i in range(24):
             parts.append(base.copy())
+            self.add_sound(random_pop_file(), time_offset=0.15)
+            
             if i == 0:
-                parts[i].write(self,3.5*UP,scale=sc1)
+                parts[i].write(self,3.5*UP,scale=sc1, run_time=0.3)
             else:
                 parts[i].letters[0].move_to(parts[i-1].letters[0].get_center()).shift(0.3*DOWN)
-                parts[i].write(self, scale = sc1)
+                parts[i].write(self, scale = sc1, run_time=0.3)
+            
+            
             
         for i in range(24):
-            parts[i].animated_permute(self,permutations[i], scale = sc1)
+            self.add_sound(random_whoosh_file(), time_offset=0.15)
+            parts[i].animated_permute(self,permutations[i], scale = sc1, run_time=0.3)
         self.wait()
-        
+
         for i in range(24):
             if i == 0:
                 parts[i].animate_shift_rescale(self, 

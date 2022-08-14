@@ -191,7 +191,7 @@ class FairString(FairBase):
         self.counters = []
         self.counter_titles = []
 
-    def write(self, scene, pos_ = None, sep = default_sep, center = True, scale = 1, do = True):
+    def write(self, scene, pos_ = None, sep = default_sep, center = True, scale = 1, do = True, run_time=1.0):
         if pos_ is None:
             pos_ = self.letters[0].get_center()        
 
@@ -211,7 +211,7 @@ class FairString(FairBase):
                 AnimationGroup(
                     *[FadeIn(l) for l in self.letters],
                 ),
-                run_time = 1
+                run_time = run_time
             )
 
     def create_from_list_of_letters(self, letters):
@@ -422,7 +422,7 @@ class FairString(FairBase):
         self.letters.sort(key = cmp_to_key(lambda l1, l2: l1.get_center()[0] - l2.get_center()[0]))
         self.update_string()
 
-    def animated_permute(self, scene, perm_list, scale = 1):
+    def animated_permute(self, scene, perm_list, scale = 1, run_time=1.0):
         anims = []
         for i in range(len(self.letters)):
             for f, t in perm_list:
@@ -437,7 +437,7 @@ class FairString(FairBase):
                     break
         scene.play(
             *anims,
-            run_time = 1
+            run_time = run_time
         )
     
     def copy(self):
@@ -468,6 +468,14 @@ class FairString(FairBase):
 
 def random_click_file():
 	return f"audio/click/click_{random.randint(0, 3)}.wav"
+
+
+def random_pop_file():
+	return f"audio/pop/pop_{random.randint(0, 6)}.wav"
+
+
+def random_whoosh_file():
+	return f"audio/whoosh/whoosh_{random.randint(0, 3)}.wav"
 
 
 def create_bubble(pos, scale = 1.0, color = text_color, length_scale = 1):
