@@ -551,6 +551,7 @@ class DiceCube(ThreeDScene):
         self.add_fixed_in_frame_mobjects(calculation_text)
         self.play(FadeIn(calculation_text))
         T += 3
+
         # self.wait(3)
         # btw_str = [
         #     "Usually, when people say that a die is fair, ",
@@ -573,9 +574,10 @@ class DiceCube(ThreeDScene):
         # self.play(*[FadeIn(text) for text in btw_text_list])
         # self.wait()
         # self.play(*[FadeOut(text) for text in btw_text_list])
+        self.wait(5)
+        self.play(FadeOut(calculation_text))
         
-        
-        self.wait(40 - T)
+        self.wait(70 - T)
         self.play(
             *[FadeOut(o) for o in self.mobjects]
         )
