@@ -212,10 +212,8 @@ class DiceSquare(Scene):
         txtba = Tex(r"$A>B$", color = DARK_GRAY).scale(0.5).move_to(sqba.get_center())
 
         self.play(
-            AnimationGroup(
-                FadeIn(sqab),
-                FadeIn(txtab),
-            )
+            FadeIn(sqab),
+            FadeIn(txtab),
         )
         self.play(
             Circumscribe(dice_numbers[0][0], color = RED),
@@ -697,6 +695,7 @@ class Counting(Scene):
                         table[i*7+j+1].get_center()
                     ).shift(0.2*UP)
                 )
+            #self.add_sound(random_whoosh_file())
             self.play(
                 *anims,
                 FadeIn(comp[i])

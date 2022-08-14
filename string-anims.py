@@ -1295,15 +1295,16 @@ class ConstructABCD(Scene):
         self.wait()
 
         for i in range(24):
+            self.add_sound(random_click_file(), time_offset=0.15)
             if i == 0:
                 parts[i].animate_shift_rescale(self, 
                 6.7*LEFT + 3.8*UP - parts[i].letters[0].get_center(),
-                sc2/sc1, sep = default_sep * sc2)
+                sc2/sc1, sep = default_sep * sc2, run_time = 0.3)
             else:
                 parts[i].animate_shift_rescale(
                     self, 
                     parts[i-1].letters[3].get_center() + sc2 * default_sep * RIGHT - parts[i].letters[0].get_center(),
-                    sc2/sc1, sep = default_sep * sc2
+                    sc2/sc1, sep = default_sep * sc2, run_time = 0.3
                 )
         
         #druha iterace
@@ -1313,13 +1314,15 @@ class ConstructABCD(Scene):
 
         parts = [base]
         for i in range(1, 24):
+            self.add_sound(random_pop_file(), time_offset=0.15)
             parts.append(base.copy())
             parts[i].letters[0].move_to(parts[i-1].letters[0].get_center()).shift(0.2*DOWN)
-            parts[i].write(self, center = False, scale = sc2)
+            parts[i].write(self, center = False, scale = sc2, run_time = 0.3)
             
 
         for i in range(24):
-            parts[i].animated_permute(self,permutations[i], scale = sc2)
+            self.add_sound(random_click_file(), time_offset=0.15)
+            parts[i].animated_permute(self,permutations[i], scale = sc2, run_time = 0.3)
         self.wait()
 
         #treti iterace
@@ -1330,11 +1333,17 @@ class ConstructABCD(Scene):
         base2 = base.copy()
         for l, l2 in zip(base.letters, base2.letters):
             l2.scale(sc2).move_to(l.get_center()).shift(24*(parts[1].letters[0].get_center() - parts[0].letters[0].get_center()))
+        for i in range(1, 24):
+            self.add_sound(random_pop_file, 0.15 + 0.3 * (i-1))
         self.play(
-            *[FadeIn(l) for l in base2.letters]
+            *[FadeIn(l) for l in base2.letters],
+            run_time = 0.3
         )
         self.wait()
-        base2.animated_permute(self, permutations[1], scale = sc2)        
+        for i in range(1, 24):
+            self.add_sound(random_pop_file, 0.15 + 0.3 * (i-1))
+        base2.animated_permute(self, permutations[1], scale = sc2, run_time = 0.3)        
+
         self.wait()
         return
 

@@ -448,7 +448,7 @@ class FairString(FairBase):
             *[l.animate.shift(shft) for l in self.letters],
         )
 
-    def animate_shift_rescale(self, scene, shft, scale, sep):
+    def animate_shift_rescale(self, scene, shft, scale, sep, run_time = 1):
         for i in range(len(self.letters)):
             self.letters[i].generate_target()
             self.letters[i].target.scale(scale)
@@ -459,6 +459,7 @@ class FairString(FairBase):
 
         scene.play(
             *[MoveToTarget(l) for l in self.letters],
+            run_time = run_time
         )
     
     def add(self, sp):
