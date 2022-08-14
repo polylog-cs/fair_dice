@@ -4,7 +4,8 @@ from util import *
 
 class Thumbnail(ThreeDScene):
     def construct(self):
-        ball = Sphere(center = 4.5*LEFT + 1.5*UP, radius = 2, resolution = (10,10)).set_color(BLUE)
+        #ball = Sphere(center = 4.5*LEFT + 1.5*UP, radius = 2, resolution = (10,10)).set_color(BLUE)
+        ball = ImageMobject("sphere.png").move_to(1.5*UP).scale(0.3)
         self.add(
             ball
         )
@@ -16,7 +17,7 @@ class Thumbnail(ThreeDScene):
         txt = Group(*txt).arrange(DOWN).shift(0*RIGHT + 1.5*DOWN)
         txt[0].align_to(txt[1], RIGHT)
 
-        arrow = ImageMobject("sipka.png").move_to(0*RIGHT + 1.5*UP)
+        arrow = ImageMobject("sipka.png").move_to(4.5*RIGHT + 0.5*UP)
 
         # arrow = Arrow(
         #     start = 1*RIGHT + 1 * DOWN,
