@@ -446,12 +446,13 @@ class FairString(FairBase):
     def copy(self):
         return FairString(self.str, self.letters[0])
          
-    def animate_shift(self, scene, shft):
+    def animate_shift(self, scene, shft, run_time = 1.0):
         scene.play(
             *[l.animate.shift(shft) for l in self.letters],
+            run_time = run_time
         )
 
-    def animate_shift_rescale(self, scene, shft, scale, sep, run_time = 1):
+    def animate_shift_rescale(self, scene, shft, scale, sep, run_time = 1.0):
         for i in range(len(self.letters)):
             self.letters[i].generate_target()
             self.letters[i].target.scale(scale)
@@ -480,7 +481,7 @@ def random_pop_file():
 
 def random_whoosh_file():
 	return f"audio/whoosh/whoosh_{random.randint(0, 3)}.wav"
-
+whoosh_gain = -8
 
 def create_bubble(pos, scale = 1.0, color = text_color, length_scale = 1):
     scale = scale / 200.0
