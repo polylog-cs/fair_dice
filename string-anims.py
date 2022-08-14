@@ -1383,8 +1383,8 @@ class Scrolling(Scene):
         sc = 0.35
         
         #####
-        L = 100
-        up_shift = 10*UP
+        L = 200
+        up_shift = 40*UP
         #####
 
         test = 0
