@@ -395,16 +395,16 @@ class FairString(FairBase):
             scene.play(*anims, run_time=run_time_current)
             scene.wait()
 
-        if beg == False:
-            if sound_good == "good":
-                scene.add_sound("audio/polylog_succes.wav")
-            if sound_good == "bad":
-                scene.add_sound("audio/polylog_failure.wav")
-            scene.play(
-                Uncreate(underscore1),
-                Uncreate(underscore2),
-                Uncreate(underscore3),
-            )
+        # if beg == False:
+        #     if sound_good == "good":
+        #         scene.add_sound(f"audio/polylog_succes.wav")
+        #     if sound_good == "bad":
+        #         scene.add_sound(f"audio/polylog_failure.wav")
+        #     scene.play(
+        #         Uncreate(underscore1),
+        #         Uncreate(underscore2),
+        #         Uncreate(underscore3),
+        #     )
 
     def delete(self, scene):
         scene.play(
