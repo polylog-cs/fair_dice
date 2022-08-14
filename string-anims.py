@@ -586,20 +586,19 @@ class Construction2(Scene):
             parts = [base] + [base.copy() for i in range(5)]
             if it == 0:
                 parts[0].letters[0].shift(2*UP)
-                parts[0].write(self)
+                self.add_sound(random_pop_file(), time_offset = 0.15)
+                parts[0].write(self, run_time = 0.3)
             if it == 1:
                 print((parts[0].letters[0].get_center() + parts[0].letters[len(parts[0].letters)-1].get_center())/2 * LEFT)
-                parts[0].animate_shift(
-                    self,
-                    (parts[0].letters[0].get_center() + parts[0].letters[len(parts[0].letters)-1].get_center())/2 * LEFT
-                )
+                
             for i in range(1, 6):
                 parts[i].letters[0].align_to(
                     parts[i-1].letters[0], LEFT
                 ).next_to(
                     parts[i-1].letters[0], DOWN
                 )
-                parts[i].write(self)
+                self.add_sound(random_pop_file(), time_offset = 0.15)
+                parts[i].write(self, run_time = 0.3)
 
             # the triangle with A,B,C
             rad = 0.5
@@ -621,11 +620,12 @@ class Construction2(Scene):
             #Then we do the six transforms
             for i in range(6):
                 if i == 0:
-                    self.play(FadeIn(permutation_triangle))
+                    self.play(FadeIn(permutation_triangle), run_time = 0.3)
                 else:
                     # first shift the triangle
                     self.play(
-                        permutation_triangle.animate.shift(parts[i].letters[0].get_center() - parts[i-1].letters[0].get_center())
+                        permutation_triangle.animate.shift(parts[i].letters[0].get_center() - parts[i-1].letters[0].get_center()),
+                        run_time = 0.3
                     )
 
                     ar_width = 1
@@ -646,11 +646,15 @@ class Construction2(Scene):
                         arrows_to_create.add(DoubleArrow(start = pA.get_center(), end = pC.get_center(), color = text_color, stroke_width = ar_width))
 
                     self.play(
-                        *[FadeIn(arrow) for arrow in arrows_to_create]                
+                        *[FadeIn(arrow) for arrow in arrows_to_create]  ,
+                        run_time = 0.3              
                     )
-                    parts[i].animated_permute(self, permutations[i])
+
+                    self.add_sound(random_click_file(), time_offset = 0.15)
+                    parts[i].animated_permute(self, permutations[i], run_time = 0.3)
                     self.play(
-                        *[FadeOut(arrow) for arrow in arrows_to_create] 
+                        *[FadeOut(arrow) for arrow in arrows_to_create] ,
+                        run_time = 0.3
                     )
             self.play(
                 FadeOut(pA),
@@ -659,34 +663,44 @@ class Construction2(Scene):
             )
             #Then we form one long string
             if it == 0:
-                parts[0].animate_shift(self, 3*LEFT)
+                self.add_sound(random_whoosh_file(), time_offset = 0.15, gain = whoosh_gain)
+
+                parts[0].animate_shift(self, 3*LEFT, run_time = 0.3)
                 for i in range(1, 6):
+                    self.add_sound(random_whoosh_file(), time_offset = 0.15, gain = whoosh_gain)
+
                     parts[i].animate_shift(
                         self,
                         parts[i-1].letters[len(parts[i-1].letters)-1].get_center()
                         + default_sep * RIGHT
-                        - parts[i].letters[0].get_center()
+                        - parts[i].letters[0].get_center(),
+                        run_time = 0.3
                     )
             else:
-                parts[0].animate_shift_rescale(self, 3*LEFT, sc, default_sep * sc)
+                self.add_sound(random_whoosh_file(), time_offset = 0.15, gain = whoosh_gain)
+                parts[0].animate_shift_rescale(self, 3*LEFT, sc, default_sep * sc, run_time = 0.3)
                 for i in range(1, 6):
                     if i == 3:
+                        self.add_sound(random_whoosh_file(), time_offset = 0.15, gain = whoosh_gain)
                         parts[i].animate_shift_rescale(
                             self,
                             parts[0].letters[0].get_center()
                             + 1.5 * DOWN
                             - parts[i].letters[0].get_center(),
                             sc,
-                            default_sep * sc
+                            default_sep * sc,
+                            run_time = 0.3
                         )
                     else:
+                        self.add_sound(random_whoosh_file(), time_offset = 0.15, gain = whoosh_gain)
                         parts[i].animate_shift_rescale(
                             self,
                             parts[i-1].letters[len(parts[i-1].letters)-1].get_center()
                             + default_sep *  RIGHT
                             - parts[i].letters[0].get_center(),
                             sc,
-                            default_sep * sc
+                            default_sep * sc,
+                            run_time = 0.3
                         )
 
             #merge into one fair string
@@ -698,6 +712,7 @@ class Construction2(Scene):
         # [udělá se jeden dlouhý string (asi na dvě řádky) a pak výpočet]
         # Nice, it works. 
         self.wait()
+        return 
 
         skip = False
         self.next_section(skip_animations= skip)
@@ -1295,7 +1310,7 @@ class ConstructABCD(Scene):
         self.wait()
 
         for i in range(24):
-            self.add_sound(random_whoosh_file(), time_offset=0.15)
+            self.add_sound(random_whoosh_file(), time_offset=0.15, gain = whoosh_gain)
             if i == 0:
                 parts[i].animate_shift_rescale(self, 
                 6.7*LEFT + 3.8*UP - parts[i].letters[0].get_center(),
@@ -1399,9 +1414,11 @@ class Scrolling(Scene):
         ]
         print("str")
 
+
+
         for i in range(L):
             #str[0][4*24*i + j].move_to(6.7 * LEFT + 3.8*UP + test*5*DOWN + i*0.2*DOWN + j * default_sep * sc * RIGHT)
-            dot = Tex("A").move_to(6.7 * LEFT + 3.8*UP + test*5*DOWN + i*0.2*DOWN )
+            dot = Tex("A").move_to(6.7 * LEFT + 3.8*UP + test*5*DOWN + i*0.2*DOWN ).scale(sc)
             str[i][0].move_to(dot.get_center()).align_to(dot, LEFT)
             for j in range(1, 4*24):
                 str[i][0][j].move_to(str[i][0][j-1].get_center() + default_sep * sc * RIGHT)
@@ -1449,12 +1466,12 @@ class Scrolling(Scene):
                     run_time = 30
                 ),
                 Succession(
-                    Wait(2),
+                    Wait(2+5),
                     Write(Tex(r"$55296$ letters ", color = DARK_GRAY).shift(2*UP).set_z_index(100).scale(2)),
                     Write(Tex(r"$= 4 \times 13824$ sides: ", color = DARK_GRAY).shift(1*UP).set_z_index(100).scale(2))
                 ),
                 Succession(
-                    Wait(15),
+                    Wait(15+5),
                     AnimationGroup(
                         Write(Tex(list_to_string(four_dice), color = BLACK).shift(3*DOWN).scale(0.8).set_z_index(100)),
                         Write(Tex(r"$48$ letters = $4 \times 12$ sides: ", color = BLACK).shift(2*DOWN).scale(1.8).set_z_index(100))
