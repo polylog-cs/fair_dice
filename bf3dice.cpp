@@ -21,25 +21,25 @@ bool check(string s) {
   return false;
 }
 
-void gen_all_triples(string s, int A, int B, int C) {
+void gen(string s, int A, int B, int C) {
   if (s.size() == 18) {
     if (check(s)) {
       cout << s << endl;
     }
   } else {
     if (A < 6) {
-      gen_all_triples(s + "A", A + 1, B, C);
+      gen(s + "A", A + 1, B, C);
     }
     if (B < 6) {
-      gen_all_triples(s + "B", A, B + 1, C);
+      gen(s + "B", A, B + 1, C);
     }
     if (C < 6) {
-      gen_all_triples(s + "C", A, B, C + 1);
+      gen(s + "C", A, B, C + 1);
     }
   }
 
 }
 
 int main() {
-  gen_all_triples("", 0, 0, 0);
+  gen("", 0, 0, 0);
 }
