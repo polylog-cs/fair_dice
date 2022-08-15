@@ -230,7 +230,7 @@ class FairString(FairBase):
         if ranges[0] == None:
             ranges = [[0, len(self.str)], [0, len(self.str)]]
         cleanup_anims = []
-        even = 0
+
         for i in range(ranges[0][0], ranges[0][1]):
             for j in range(max(i+1, ranges[1][0]), ranges[1][1]):
                 for mi in match_set:
@@ -268,9 +268,7 @@ class FairString(FairBase):
                                 self.letters[i].animate.set_color(highlight_color),
                                 self.letters[j].animate.set_color(highlight_color)
                             ]
-                        if even % 2 == 0:
-                            scene.add_sound(random_click_file())
-                        even = 1 - even
+                        scene.add_sound(random_click_file())
                         scene.play(
                             AnimationGroup(
                                 *anims,
