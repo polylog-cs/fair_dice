@@ -114,9 +114,10 @@ class Thanks(Scene):
             "-- the organizers of SoME2,",
             "-- Manim Community,",
             "-- csha, Jindra Dušek, Martin Dvořák, Bernhard Haeupler, Florian Haeupler,",
-            "Richard Hladík, Filip Hlásek, Aranka Hrušková, Jan Petr, Hanka Rozhoňová,",
-            "Jan Volhejn, Vojtěch Volhejn, Tung Anh Vu, Vilas Winstein",
-            "See video description for links, and some more related math :)",
+            "Richard Hladík, Filip Hlásek, Aranka Hrušková, Yannic Maus, Jan Petr, ",
+            "Hanka Rozhoňová, Jukka Suomela, Jan Volhejn, Vojtěch Volhejn, ",
+            "Tung Anh Vu, Vilas Winstein",
+            "See video description for links and some more related math. :)",
         ]
         t = [
             Tex(ss, color = text_color) for ss in s
@@ -129,7 +130,8 @@ class Thanks(Scene):
         t[3].scale(0.7).next_to(t[2], DOWN).align_to(t[0], LEFT)
         t[4].scale(0.7).next_to(t[3], DOWN).align_to(t[0], LEFT)
         t[5].scale(0.7).next_to(t[4], DOWN).align_to(t[0], LEFT)
-        t[6].move_to(t[5].get_center()[1]*UP + 1*DOWN)
+        t[6].scale(0.7).next_to(t[5], DOWN).align_to(t[0], LEFT)
+        t[7].move_to(t[5].get_center()[1]*UP + 2*DOWN)
 
         self.play(
             *[FadeIn(tt) for tt in t]

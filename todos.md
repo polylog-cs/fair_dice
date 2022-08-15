@@ -38,15 +38,29 @@ en poslední "slide" s Big thanks je over too fast
 - taky si do description hodit srandu s asymptotikou, možná zmínit cotese, dpčko
 - přidat #some2
 
-
-some time back
-
-there is other solutions
-there ARE other solutions?
-
-let me explain why but FIRST let's go back to three players
-"I will explain why"?
-
+ 
 "given that we are not even halfway through the video"...
 něco jako "in the rest of the video we show ..." 
 
+vytváření - pop
+transformace - click 
+hejbání - wush
+
+
+důležité
+
+- FURT CHYBÍ ČÍSLA CO DĚLAJÍ POŘADÍ 1. 2. 3. 
+- 2:06 špatný střih ABC jsou šedá
+- 4:01 špatný střih text dole je šedý
+- 8:55 if you look at the first two solutions - dal bych před to ~1s mezeru
+- 9:34 asi jak je to zrychlené tak ten click sound zní divně, mohl bys těch clicků dát jen půlku?
+- 13:13 řekne se ABC ale highlightne se CAB
+- 13:26 "it does not matter how we split the triplet. there is one exception" Tady mi to přijde moc suše namluvené
+- 14:20 "let's try out" před to bych přidal ~1s mezeru
+- 16:27 animace je strašně rychle ustřihlá, udělal bych to tak, že když říkáš "and the last trick" tak se furt koukáš na ten string, ať potom nenásleduje hluché místo kde je napsané jen ABC
+
+nedůležité
+
+0:09 in each round, IN není slyšet
+6:37 youtube auto subtitle přečte "fair dice" jako "paradise"
+konec: v závěrečné scéně Thanks jsem měl čárku navíc, pushnul jsem opravu scény
