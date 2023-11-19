@@ -14,7 +14,7 @@ class Thumbnail(ThreeDScene):
         txt = Group(*txt).arrange(DOWN).shift(0 * RIGHT + 3.5 * UP)
         txt[0].align_to(txt[1], RIGHT)
 
-        arrow = ImageMobject("sipka.png").move_to(4.5 * RIGHT + 0.3 * DOWN)
+        arrow = ImageMobject("sipka.png").move_to(4.5 * LEFT + 0.3 * DOWN)
 
         # arrow = Arrow(
         #     start = 1*RIGHT + 1 * DOWN,
